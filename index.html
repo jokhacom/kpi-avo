@@ -133,7 +133,7 @@ const supabaseReady = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.lengt
 // ТЕСТОВЫЙ РЕЖИМ: если true — при входе без сессии сайт сам создаёт гостевую
 // (анонимную) учётную запись, без формы входа. Поставьте false, чтобы вернуть
 // обычный обязательный вход по email — и просто загрузите файл заново.
-const GUEST_MODE_ENABLED = false;
+const GUEST_MODE_ENABLED = true;
 const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // ---------------- design tokens ----------------
