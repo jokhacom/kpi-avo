@@ -495,6 +495,98 @@ function AutoAnonScreen({ onShowEmailLogin }) {
   );
 }
 
+// ---------------- Landing page (тёмная тема, жёлто-лаймовый акцент) ----------------
+const LANDING_BG = "#0A1220";
+const LANDING_CARD = "#101B2E";
+const LANDING_BORDER = "rgba(255,255,255,0.08)";
+const LANDING_ACCENT = "#E4FF3D";
+const LANDING_TEXT = "#F3F5F8";
+const LANDING_MUTED = "#93A0B4";
+
+function LandingPage({ onEnter }) {
+  const steps = [
+    { n: "01", title: "Добавьте сотрудников", desc: "Соберите команду в одном рабочем пространстве." },
+    { n: "02", title: "Настройте KPI", desc: "Задайте цели, веса и правила расчёта." },
+    { n: "03", title: "Рассчитайте результат", desc: "Прозрачный итог и премия." },
+  ];
+  const capabilities = [
+    { title: "Расчёт KPI", desc: "Точные показатели по каждому сотруднику и прозрачная формула результата." },
+    { title: "Импорт Excel / CSV", desc: "Загружайте цели и результаты без ручного переноса данных." },
+    { title: "Роли и права", desc: "Безопасное управление для сотрудников, администраторов и руководителей." },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: LANDING_BG, color: LANDING_TEXT, fontFamily: FONT }}>
+      {/* header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: `1px solid ${LANDING_BORDER}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: "#fff", color: "#0A1220", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13 }}>KPI</div>
+          <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: 0.3 }}>AVO&nbsp;KPI</span>
+        </div>
+        <button onClick={onEnter} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: LANDING_TEXT, fontSize: 14, cursor: "pointer" }}>
+          Войти ↗
+        </button>
+      </div>
+
+      {/* hero */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 40px" }}>
+        <div style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: LANDING_MUTED, marginBottom: 16 }}>AVO · Performance platform</div>
+        <h1 style={{ fontSize: 44, lineHeight: 1.05, fontWeight: 800, margin: "0 0 20px" }}>
+          Система расчёта{" "}
+          <span style={{ display: "block" }}>и управления KPI</span>
+        </h1>
+        <p style={{ fontSize: 16, color: LANDING_MUTED, lineHeight: 1.55, maxWidth: 520, marginBottom: 28 }}>
+          Прозрачно измеряйте результаты команды, автоматизируйте расчёты и принимайте решения на основе данных.
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <button onClick={onEnter} style={{ background: LANDING_ACCENT, color: "#0A1220", border: "none", borderRadius: 999, padding: "13px 24px", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+            Рассчитать KPI ↗
+          </button>
+          <button onClick={onEnter} style={{ background: "transparent", color: LANDING_TEXT, border: `1px solid ${LANDING_BORDER}`, borderRadius: 999, padding: "13px 24px", fontSize: 15, cursor: "pointer" }}>
+            Войти
+          </button>
+        </div>
+      </div>
+
+      {/* workflow */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "10px 20px 50px" }}>
+        <div style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: LANDING_MUTED, marginBottom: 8 }}>01 — Workflow</div>
+        <h2 style={{ fontSize: 26, fontWeight: 800, margin: "0 0 22px" }}>Как это работает</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+          {steps.map((s) => (
+            <div key={s.n} style={{ background: LANDING_CARD, border: `1px solid ${LANDING_BORDER}`, borderRadius: 16, padding: 20 }}>
+              <div style={{ fontSize: 13, color: LANDING_MUTED, marginBottom: 24 }}>{s.n}</div>
+              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>{s.title}</div>
+              <div style={{ fontSize: 13, color: LANDING_MUTED, lineHeight: 1.5 }}>{s.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* capabilities */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "10px 20px 60px" }}>
+        <div style={{ fontSize: 12, letterSpacing: 2, textTransform: "uppercase", color: LANDING_MUTED, marginBottom: 8 }}>02 — Capabilities</div>
+        <h2 style={{ fontSize: 26, fontWeight: 800, margin: "0 0 22px" }}>Возможности</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+          {capabilities.map((c) => (
+            <div key={c.title} style={{ background: "transparent", border: `1px solid ${LANDING_BORDER}`, borderRadius: 16, padding: 22 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: LANDING_ACCENT, marginBottom: 40 }} />
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{c.title}</div>
+              <div style={{ fontSize: 13, color: LANDING_MUTED, lineHeight: 1.5 }}>{c.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* footer */}
+      <div style={{ borderTop: `1px solid ${LANDING_BORDER}`, padding: "18px 20px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8, fontSize: 12, color: LANDING_MUTED }}>
+        <span>© AVO KPI</span>
+        <span>Эффективность, понятная каждому.</span>
+      </div>
+    </div>
+  );
+}
+
 function AuthScreen({ onAuthed, onBack }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
@@ -1322,6 +1414,13 @@ function KpiApp() {
   const [showEmailLogin, setShowEmailLogin] = useState(() => {
     try { return localStorage.getItem("kpi-prefer-email-login") === "1"; } catch (e) { return false; }
   });
+  const [pastLanding, setPastLanding] = useState(() => {
+    try { return localStorage.getItem("kpi-past-landing") === "1"; } catch (e) { return false; }
+  });
+  const enterApp = () => {
+    setPastLanding(true);
+    try { localStorage.setItem("kpi-past-landing", "1"); } catch (e) {}
+  };
   const chooseEmailLogin = () => {
     setShowEmailLogin(true);
     try { localStorage.setItem("kpi-prefer-email-login", "1"); } catch (e) {}
@@ -1613,6 +1712,7 @@ function KpiApp() {
       setShowEmailLogin(false);
       try { localStorage.removeItem("kpi-prefer-email-login"); } catch (e) {}
     };
+    if (!pastLanding) return <LandingPage onEnter={enterApp} />;
     if (!GUEST_MODE_ENABLED) return <AuthScreen />;
     return showEmailLogin
       ? <AuthScreen onBack={backToGuest} />
