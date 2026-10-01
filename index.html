@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AVO KPI — система расчёта и управления KPI</title>
+<title>Unum — система расчёта и управления KPI</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%23061331'/%3E%3Crect x='10' y='22' width='5' height='9' rx='2' fill='%23EAFF00' opacity='.55'/%3E%3Crect x='17.5' y='16' width='5' height='15' rx='2' fill='%23EAFF00' opacity='.8'/%3E%3Crect x='25' y='9' width='5' height='22' rx='2' fill='%23EAFF00'/%3E%3C/svg%3E" />
 <meta name="description" content="Прозрачно измеряйте результат команды, автоматизируйте расчёты KPI и премий, импортируйте данные из Excel / CSV." />
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -38,7 +39,8 @@
   var lang = store.get("avo-lang") || "ru";
   root.setAttribute("lang", lang);
 
-  var inApp = store.get("kpi-past-landing") === "1" || hasSupabaseSession();
+  var forceLanding = /[?&]home\b/.test(location.search);
+  var inApp = !forceLanding && (store.get("kpi-past-landing") === "1" || hasSupabaseSession());
   if (inApp) root.classList.add("app-mode");
 
   var APP_SCRIPTS = [
@@ -153,6 +155,7 @@
     color-scheme: dark;
   }
 
+  html.app-mode, html.app-mode[data-theme] { color-scheme: light !important; }
   html.app-mode #landing { display: none; }
   html:not(.app-mode) #root { display: none; }
   html:not(.app-mode) body { background: var(--l-bg); }
@@ -169,8 +172,8 @@
   /* header */
   .l-header { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--l-bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .l-header .l-wrap { display: flex; align-items: center; gap: 24px; height: 84px; }
-  .l-logo { display: flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 600; letter-spacing: 0.02em; }
-  .l-logo-mark { width: 44px; height: 44px; border-radius: 10px; background: #000; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 16px; letter-spacing: -0.04em; }
+  .l-logo { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+  .l-logo-mark { width: 44px; height: 44px; flex: none; }
   .l-logo .l-dim { color: var(--l-faint); font-weight: 500; }
   .l-nav { display: flex; gap: 40px; margin: 0 auto; font-size: 17px; color: var(--l-muted); }
   .l-nav a:hover { color: var(--l-text); }
@@ -467,7 +470,7 @@
 <div id="landing">
   <header class="l-header">
     <div class="l-wrap">
-      <a class="l-logo" href="#top" aria-label="AVO KPI"><span class="l-logo-mark">AV</span><span>AVO <span class="l-dim">KPI</span></span></a>
+      <a class="l-logo" href="#top" aria-label="Unum KPI"><svg class="l-logo-mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#061331"/><rect x="10" y="22" width="5" height="9" rx="2" fill="#EAFF00" opacity=".55"/><rect x="17.5" y="16" width="5" height="15" rx="2" fill="#EAFF00" opacity=".8"/><rect x="25" y="9" width="5" height="22" rx="2" fill="#EAFF00"/></svg><span>unum<span class="l-dim">.kpi</span></span></a>
       <nav class="l-nav">
         <a href="#features" data-i18n="nav.features">Возможности</a>
         <a href="#how" data-i18n="nav.how">Как это работает</a>
@@ -493,7 +496,7 @@
     <section class="l-hero">
       <div class="l-wrap">
         <div class="l-hero-copy">
-          <div class="l-kicker">AVO Bank · Performance platform</div>
+          <div class="l-kicker">Performance platform · KPI &amp; bonus</div>
           <h1 data-i18n-html="hero.title">Система расчёта и&nbsp;управления <em>KPI</em></h1>
           <p class="l-lead" data-i18n="hero.lead">Прозрачно измеряйте результат команды, автоматизируйте расчёты и принимайте решения на основе данных.</p>
           <div class="l-ctas">
@@ -510,7 +513,7 @@
         <div class="l-hero-viz" id="viz">
           <div class="l-viz-head">
             <div>
-              <div class="l-kicker" data-i18n="viz.kicker">AVO KPI / Моушн-визуал</div>
+              <div class="l-kicker" data-i18n="viz.kicker">Unum / Как считается KPI</div>
               <p class="l-viz-sub" data-i18n="viz.sub">Каждый этап расчёта виден и понятен.</p>
             </div>
             <button type="button" class="l-pause" id="viz-toggle" aria-pressed="false" data-i18n-label="viz.pause"><svg class="l-icon"><use href="#i-pause"/></svg></button>
@@ -651,7 +654,7 @@
   </main>
 
   <footer class="l-footer">
-    <div class="l-wrap"><span>© AVO KPI</span><span data-i18n="footer">Эффективность, понятная каждому.</span></div>
+    <div class="l-wrap"><span>© Unum</span><span data-i18n="footer">Эффективность, понятная каждому.</span></div>
   </footer>
 </div>
 
@@ -664,7 +667,7 @@
       "hero.title": "Система расчёта и&nbsp;управления <em>KPI</em>",
       "hero.lead": "Прозрачно измеряйте результат команды, автоматизируйте расчёты и принимайте решения на основе данных.",
       "hero.cta": "Рассчитать KPI", "hero.check1": "До 120% по показателю", "hero.check3": "Роли и права",
-      "viz.kicker": "AVO KPI / Моушн-визуал", "viz.sub": "Каждый этап расчёта виден и понятен.", "viz.flow": "Поток данных",
+      "viz.kicker": "Unum / Как считается KPI", "viz.sub": "Каждый этап расчёта виден и понятен.", "viz.flow": "Поток данных",
       "viz.employees": "Сотрудники", "viz.result": "Результат", "viz.calc": "Расчёт KPI", "viz.auto": "Автоматический расчёт",
       "viz.data": "Данные · Результат", "viz.history": "История", "viz.months": "Май · Июн · Июл · Авг",
       "viz.pause": "Остановить анимацию", "viz.play": "Запустить анимацию",
@@ -684,7 +687,7 @@
       "hero.title": "<em>KPI</em> hisoblash va boshqaruv tizimi",
       "hero.lead": "Jamoa natijasini shaffof o‘lchang, hisob-kitoblarni avtomatlashtiring va ma’lumotlarga asoslangan qarorlar qabul qiling.",
       "hero.cta": "KPI hisoblash", "hero.check1": "Ko‘rsatkich bo‘yicha 120% gacha", "hero.check3": "Rollar va huquqlar",
-      "viz.kicker": "AVO KPI / Motion vizual", "viz.sub": "Hisobning har bir bosqichi ko‘rinadi va tushunarli.", "viz.flow": "Ma’lumotlar oqimi",
+      "viz.kicker": "Unum / KPI qanday hisoblanadi", "viz.sub": "Hisobning har bir bosqichi ko‘rinadi va tushunarli.", "viz.flow": "Ma’lumotlar oqimi",
       "viz.employees": "Xodimlar", "viz.result": "Natija", "viz.calc": "KPI hisobi", "viz.auto": "Avtomatik hisob",
       "viz.data": "Ma’lumot · Natija", "viz.history": "Tarix", "viz.months": "May · Iyun · Iyul · Avg",
       "viz.pause": "Animatsiyani to‘xtatish", "viz.play": "Animatsiyani yoqish",
@@ -704,7 +707,7 @@
       "hero.title": "<em>KPI</em> calculation and management system",
       "hero.lead": "Measure team performance transparently, automate calculations and make data-driven decisions.",
       "hero.cta": "Calculate KPI", "hero.check1": "Up to 120% per metric", "hero.check3": "Roles & access",
-      "viz.kicker": "AVO KPI / Motion visual", "viz.sub": "Every step of the calculation is visible and clear.", "viz.flow": "Data flow",
+      "viz.kicker": "Unum / How KPI is calculated", "viz.sub": "Every step of the calculation is visible and clear.", "viz.flow": "Data flow",
       "viz.employees": "Employees", "viz.result": "Result", "viz.calc": "KPI calculation", "viz.auto": "Automatic calculation",
       "viz.data": "Data · Result", "viz.history": "History", "viz.months": "May · Jun · Jul · Aug",
       "viz.pause": "Pause animation", "viz.play": "Play animation",
@@ -1119,7 +1122,7 @@ function AutoAnonScreen({ onShowEmailLogin }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: BG }}>
       <Card style={{ padding: 28, width: 340, textAlign: "center" }}>
-        <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 8 }}>KPI сотрудников</div>
+        <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 8 }}>Unum · KPI сотрудников</div>
         {error ? (
           <div style={{ fontSize: 13, color: RED, marginBottom: 14 }}>{error}</div>
         ) : (
@@ -1162,7 +1165,7 @@ function AuthScreen({ onAuthed, onBack }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: BG }}>
       <Card style={{ padding: 28, width: 340 }}>
-        <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>KPI сотрудников</div>
+        <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>Unum · KPI сотрудников</div>
         <h1 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 20px", color: TEXT }}>{mode === "login" ? "Вход" : "Регистрация"}</h1>
         <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
           <TextField type="email" value={email} onChange={setEmail} placeholder="Email" />
@@ -2271,7 +2274,7 @@ function KpiApp() {
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>KPI сотрудников</div>
+            <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>Unum · KPI сотрудников</div>
             <h1 style={{ fontSize: 24, fontWeight: 600, color: TEXT, margin: 0 }}>Расчёт премии по показателям</h1>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
