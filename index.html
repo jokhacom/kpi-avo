@@ -155,11 +155,33 @@
     color-scheme: dark;
   }
 
-  html.app-mode, html.app-mode[data-theme] { color-scheme: light !important; }
+  :root {
+    --a-bg: #F5F7FA; --a-card: #FFFFFF; --a-border: #E3E7EF; --a-text: #0B1630; --a-muted: #6B7385;
+    --a-primary: #061331; --a-on-primary: #EAFF00; --a-soft: #EBEEF4; --a-track: #E9ECF2; --a-info: #2454E0;
+    --a-green: #1E8E5A; --a-amber: #A8720C; --a-orange: #C2650F; --a-red: #C0392B; --a-on-grade: #FFFFFF;
+    --a-red-soft: #FBEAE8; --a-green-soft: #E4F5EA; --a-amber-soft: #FBF3E3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --a-bg: #060C19; --a-card: #0D172B; --a-border: #1E2B45; --a-text: #F3F5F8; --a-muted: #93A0B4;
+      --a-primary: #EAFF00; --a-on-primary: #0B1630; --a-soft: #13203A; --a-track: #1A2742; --a-info: #7C9BFF;
+      --a-green: #3DD68C; --a-amber: #F2B84B; --a-orange: #F28C3B; --a-red: #FF6B5E; --a-on-grade: #061331;
+      --a-red-soft: rgba(255, 107, 94, 0.14); --a-green-soft: rgba(61, 214, 140, 0.14); --a-amber-soft: rgba(242, 184, 75, 0.14);
+    }
+  }
+  :root[data-theme="dark"] {
+    --a-bg: #060C19; --a-card: #0D172B; --a-border: #1E2B45; --a-text: #F3F5F8; --a-muted: #93A0B4;
+    --a-primary: #EAFF00; --a-on-primary: #0B1630; --a-soft: #13203A; --a-track: #1A2742; --a-info: #7C9BFF;
+    --a-green: #3DD68C; --a-amber: #F2B84B; --a-orange: #F28C3B; --a-red: #FF6B5E; --a-on-grade: #061331;
+    --a-red-soft: rgba(255, 107, 94, 0.14); --a-green-soft: rgba(61, 214, 140, 0.14); --a-amber-soft: rgba(242, 184, 75, 0.14);
+  }
+  html.app-mode body { background: var(--a-bg); color: var(--a-text); }
+  #root input, #root select { background-color: var(--a-card); color: var(--a-text); }
+  #root input::placeholder { color: var(--a-muted); }
   html.app-mode #landing { display: none; }
   html:not(.app-mode) #root { display: none; }
   html:not(.app-mode) body { background: var(--l-bg); }
-  .app-boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #6B7385; font-size: 14px; background: #F4F6FA; text-align: center; }
+  .app-boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: var(--a-muted); font-size: 14px; background: var(--a-bg); text-align: center; }
 
   #landing { min-height: 100vh; background: var(--l-bg); color: var(--l-text); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
   #landing a { color: inherit; text-decoration: none; }
@@ -750,6 +772,7 @@
     landing.querySelectorAll("[data-theme-set]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-theme-set") === theme)); });
     boot.store.set("avo-theme", theme);
   }
+  boot.setTheme = setTheme; // переключатель темы внутри приложения использует тот же механизм
 
   landing.addEventListener("click", function (e) {
     var t = e.target.closest("button, a");
@@ -792,18 +815,27 @@ const GUEST_MODE_ENABLED = false;
 const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // ---------------- design tokens ----------------
-const BG = "#F4F6FA";
-const CARD_BG = "#FFFFFF";
-const BORDER = "#E3E7EF";
-const TEXT = "#16213A";
-const MUTED = "#6B7385";
-const BLUE = "#2454E0";
-const BLUE_DARK = "#173B9E";
-const BLUE_SOFT = "#EAF0FE";
-const GREEN = "#1E8E5A";
-const AMBER = "#C58A1D";
-const ORANGE = "#C2650F";
-const RED = "#C0392B";
+// Цвета заданы CSS-переменными (--a-*) в <style> — так приложение переключается
+// между светлой и тёмной темой без перерисовки. BLUE — исторически «основной цвет»:
+// сейчас это фирменный тёмно-синий (в тёмной теме — лайм).
+const BG = "var(--a-bg)";
+const CARD_BG = "var(--a-card)";
+const BORDER = "var(--a-border)";
+const TEXT = "var(--a-text)";
+const MUTED = "var(--a-muted)";
+const BLUE = "var(--a-primary)";
+const ON_PRIMARY = "var(--a-on-primary)";
+const BLUE_DARK = "var(--a-text)";
+const BLUE_SOFT = "var(--a-soft)";
+const TRACK = "var(--a-track)";
+const INFO = "var(--a-info)";
+const GREEN = "var(--a-green)";
+const AMBER = "var(--a-amber)";
+const ORANGE = "var(--a-orange)";
+const RED = "var(--a-red)";
+const RED_SOFT = "var(--a-red-soft)";
+const GREEN_SOFT = "var(--a-green-soft)";
+const AMBER_SOFT = "var(--a-amber-soft)";
 const NUM_FONT = "'SF Mono', ui-monospace, Menlo, monospace";
 
 const MONTH_NAMES = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -844,7 +876,7 @@ const afterTax = (amount) => Number(amount || 0) * (1 - TAX_RATE);
 function gradeColor(letter) {
   switch (letter) {
     case "A": return GREEN;
-    case "B": return BLUE;
+    case "B": return INFO;
     case "C": return AMBER;
     case "D": return ORANGE;
     default: return RED;
@@ -1044,7 +1076,7 @@ function Card({ children, style = {} }) {
 function Btn({ children, onClick, variant = "secondary", disabled, style = {}, title }) {
   const base = { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, padding: "8px 12px", borderRadius: 8, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.55 : 1 };
   const variants = {
-    primary: { background: BLUE, color: "#fff", border: "none" },
+    primary: { background: BLUE, color: ON_PRIMARY, border: "none" },
     secondary: { background: CARD_BG, color: TEXT, border: `1px solid ${BORDER}` },
     ghost: { background: "transparent", color: MUTED, border: "none" },
   };
@@ -1068,15 +1100,15 @@ function NumberField({ value, onChange, width = "72px", suffix }) {
   );
 }
 function GradeBadge({ letter, size = 40 }) {
-  return <div style={{ width: size, height: size, background: gradeColor(letter), color: "#fff", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: size * 0.45 }}>{letter}</div>;
+  return <div style={{ width: size, height: size, background: gradeColor(letter), color: "var(--a-on-grade)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: size * 0.45 }}>{letter}</div>;
 }
 function EmptyState({ text }) {
   return <div style={{ fontSize: 14, textAlign: "center", padding: "36px 0", borderRadius: 12, color: MUTED, border: `1px dashed ${BORDER}` }}>{text}</div>;
 }
 function RoleBadge({ role }) {
-  const map = { super_admin: ["Super Admin", RED], admin: ["Admin", BLUE], user: ["Пользователь", MUTED] };
+  const map = { super_admin: ["Super Admin", RED], admin: ["Admin", INFO], user: ["Пользователь", MUTED] };
   const [label, color] = map[role] || ["—", MUTED];
-  return <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 999, background: color + "20", color, fontWeight: 600 }}>{label}</span>;
+  return <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 999, background: `color-mix(in srgb, ${color} 15%, transparent)`, color, fontWeight: 600 }}>{label}</span>;
 }
 
 function TopNav({ view, setView, profile }) {
@@ -1095,11 +1127,169 @@ function TopNav({ view, setView, profile }) {
         return (
           <button key={t.id} onClick={() => setView(t.id)}
             style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, padding: "7px 12px", borderRadius: 8, border: "none", cursor: "pointer",
-              background: active ? BLUE : "transparent", color: active ? "#fff" : BLUE_DARK, fontWeight: active ? 600 : 500 }}>
+              background: active ? BLUE : "transparent", color: active ? ON_PRIMARY : BLUE_DARK, fontWeight: active ? 600 : 500 }}>
             <I size={15} /> {t.label}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------- brand, theme, and small visual helpers ----------------
+const SunIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></Icon>;
+const MoonIcon = (p) => <Icon {...p}><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" /></Icon>;
+const MonitorIcon = (p) => <Icon {...p}><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></Icon>;
+
+function BrandMark({ size = 36 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" style={{ flex: "none" }}>
+      <rect width="40" height="40" rx="11" fill="#061331" />
+      <rect x="10" y="22" width="5" height="9" rx="2" fill="#EAFF00" opacity=".55" />
+      <rect x="17.5" y="16" width="5" height="15" rx="2" fill="#EAFF00" opacity=".8" />
+      <rect x="25" y="9" width="5" height="22" rx="2" fill="#EAFF00" />
+    </svg>
+  );
+}
+
+// Светлая / тёмная / как в системе — выбор общий с лендингом и запоминается.
+function ThemeSwitch() {
+  const [theme, setTheme] = useState(() => document.documentElement.getAttribute("data-theme-choice") || "system");
+  const pick = (t) => { window.KpiBoot?.setTheme?.(t); setTheme(t); };
+  const opts = [["light", SunIcon, "Светлая тема"], ["dark", MoonIcon, "Тёмная тема"], ["system", MonitorIcon, "Как в системе"]];
+  return (
+    <div role="group" aria-label="Тема" style={{ display: "flex", padding: 3, gap: 2, borderRadius: 999, border: `1px solid ${BORDER}`, background: CARD_BG }}>
+      {opts.map(([id, I, label]) => (
+        <button key={id} onClick={() => pick(id)} title={label} aria-label={label} aria-pressed={theme === id}
+          style={{ width: 30, height: 30, borderRadius: 999, border: "none", cursor: "pointer", display: "grid", placeItems: "center",
+            background: theme === id ? BLUE : "transparent", color: theme === id ? ON_PRIMARY : MUTED }}>
+          <I size={15} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// История KPI одного сотрудника по месяцам (по сохранённым расчётам).
+function employeeHistory(records, employeeId) {
+  return Object.values(records)
+    .filter((r) => r.employee_id === employeeId && r.result)
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((r) => ({ month: r.month, overall: Number(r.result.overall) || 0, grade: r.result.grade }));
+}
+
+// Мини-график динамики KPI за последние месяцы. Наведите на точку — увидите месяц и значение.
+function Sparkline({ points, width = 96, height = 28 }) {
+  if (points.length < 2) return null;
+  const vals = points.map((p) => p.overall);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = hi - lo || 1;
+  const x = (i) => 4 + (i * (width - 8)) / (points.length - 1);
+  const y = (v) => height - 4 - ((v - lo) / span) * (height - 8);
+  const d = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.overall).toFixed(1)}`).join(" ");
+  const last = points[points.length - 1];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img"
+      aria-label={`Динамика KPI: ${points.map((p) => `${monthLabel(p.month)} ${p.overall.toFixed(1)}%`).join(", ")}`} style={{ overflow: "visible" }}>
+      <path d={d} fill="none" stroke={MUTED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={x(points.length - 1)} cy={y(last.overall)} r="4" fill={BLUE} stroke={CARD_BG} strokeWidth="2" />
+      {points.map((p, i) => (
+        <circle key={p.month} cx={x(i)} cy={y(p.overall)} r="9" fill="transparent">
+          <title>{`${monthLabel(p.month)}: ${p.overall.toFixed(1)}% (${p.grade})`}</title>
+        </circle>
+      ))}
+    </svg>
+  );
+}
+
+// Сводка по команде за последний месяц, где есть расчёты.
+function TeamPulse({ employees, records }) {
+  const all = Object.values(records).filter((r) => r.result && employees.some((e) => e.id === r.employee_id));
+  if (all.length === 0) return null;
+  const month = all.reduce((m, r) => (r.month > m ? r.month : m), "");
+  const rows = all.filter((r) => r.month === month);
+  const avg = rows.reduce((s, r) => s + Number(r.result.overall), 0) / rows.length;
+  const best = rows.reduce((b, r) => (Number(r.result.overall) > Number(b.result.overall) ? r : b));
+  const needHelp = rows.filter((r) => Number(r.result.overall) < 50).length;
+  const missing = employees.length - rows.length;
+  const nameOf = (id) => employees.find((e) => e.id === id)?.name || "—";
+  const tile = (label, value, note, accent) => (
+    <Card style={{ padding: 16, flex: "1 1 180px", minWidth: 0 }}>
+      <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", color: accent || TEXT, fontFamily: NUM_FONT }}>{value}</div>
+      <div style={{ fontSize: 12, color: MUTED, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{note}</div>
+    </Card>
+  );
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 8 }}>Пульс команды · {monthLabel(month)}</div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {tile("Средний KPI", `${avg.toFixed(1)}%`, `рассчитано: ${rows.length} из ${employees.length}`)}
+        {tile("Лучший результат", `${Number(best.result.overall).toFixed(1)}%`, nameOf(best.employee_id))}
+        {tile("Нужна поддержка", needHelp, needHelp ? "KPI ниже 50%" : "все выше 50%", needHelp ? RED : GREEN)}
+      </div>
+      {missing > 0 && <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>Ещё не рассчитаны за этот месяц: {missing}.</div>}
+    </div>
+  );
+}
+
+// «Из чего сложился KPI»: у каждого показателя дорожка длиной в его вес,
+// заполнение — сколько он реально принёс в итог. Видно, где потеряны баллы.
+function KpiBreakdown({ perIndicator }) {
+  const maxWeight = Math.max(...perIndicator.map((p) => Number(p.weight) || 0), 1);
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      {perIndicator.map((p) => {
+        const weight = Number(p.weight) || 0;
+        const trackPct = (weight / maxWeight) * 100;
+        const fillPct = weight ? Math.min(100, (p.contribution / weight) * 100) : 0;
+        return (
+          <div key={p.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13, marginBottom: 6 }}>
+              <span style={{ color: TEXT, fontWeight: 500 }}>{p.name}</span>
+              <span style={{ color: MUTED, fontFamily: NUM_FONT, whiteSpace: "nowrap" }}>
+                факт {p.actual} · <span style={{ color: percentColor(p.percent) }}>{p.percent.toFixed(0)}%</span>
+              </span>
+            </div>
+            <div title={`Вклад ${p.contribution.toFixed(1)} из ${weight} возможных`} style={{ width: `${trackPct}%`, height: 10, borderRadius: 5, background: TRACK, overflow: "hidden" }}>
+              <div style={{ width: `${fillPct}%`, height: "100%", borderRadius: 5, background: BLUE }} />
+            </div>
+            <div style={{ fontSize: 12, color: MUTED, marginTop: 4, fontFamily: NUM_FONT }}>
+              вклад <b style={{ color: TEXT }}>{p.contribution.toFixed(1)}</b> из {weight}
+              {p.contribution > weight ? " · перевыполнение" : ""}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Подсказка: сколько не хватает до следующей буквенной оценки и какой показатель
+// быстрее всего её даст (с учётом веса и потолка 120% на показатель).
+function NextGradeTip({ result, grades }) {
+  const higher = [...grades].map((g) => ({ ...g, min: Number(g.min) })).filter((g) => g.min > result.overall).sort((a, b) => a.min - b.min);
+  if (higher.length === 0) {
+    return <div style={{ fontSize: 14, color: TEXT }}>Это высшая оценка — отличный результат. Держите уровень и в следующем месяце.</div>;
+  }
+  const next = higher[0];
+  const gap = next.min - result.overall;
+  const levers = result.perIndicator
+    .map((p) => ({ ...p, weight: Number(p.weight) || 0, room: ((120 - p.percent) * (Number(p.weight) || 0)) / 100 }))
+    .filter((p) => p.weight > 0 && p.room > 0.05);
+  const enough = levers.filter((p) => p.room >= gap).sort((a, b) => b.weight - a.weight);
+  const lever = enough[0] || levers.sort((a, b) => b.room - a.room)[0];
+  return (
+    <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.6 }}>
+      До оценки <b>{next.letter}</b> не хватает <b style={{ fontFamily: NUM_FONT }}>{gap.toFixed(1)} п.п.</b>
+      {lever && (
+        <span>
+          {" "}Быстрее всего — через «{lever.name}» (вес {lever.weight}%):{" "}
+          {enough[0]
+            ? <>достаточно поднять выполнение с {lever.percent.toFixed(0)}% до {Math.min(120, lever.percent + (gap / lever.weight) * 100).toFixed(0)}%.</>
+            : <>даже максимум по нему даст +{lever.room.toFixed(1)} п.п., нужны улучшения и по другим показателям.</>}
+        </span>
+      )}
     </div>
   );
 }
@@ -1191,7 +1381,7 @@ function AuthScreen({ onAuthed, onBack }) {
 }
 
 // ---------------- Employees page ----------------
-function EmployeesPage({ employees, onAdd, onRemove, onOpenCard, canManage, myId }) {
+function EmployeesPage({ employees, records = {}, onAdd, onRemove, onOpenCard, canManage, myId }) {
   const [name, setName] = useState("");
   const [monthByEmp, setMonthByEmp] = useState({});
   const [confirmId, setConfirmId] = useState(null);
@@ -1204,6 +1394,7 @@ function EmployeesPage({ employees, onAdd, onRemove, onOpenCard, canManage, myId
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 600, color: TEXT, margin: "0 0 16px" }}>Сотрудники</h2>
+      <TeamPulse employees={employees} records={records} />
       <Card style={{ padding: 16, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
         <TextField value={name} onChange={setName} placeholder="ФИО нового сотрудника" style={{ flex: 1 }} />
         <Btn variant="primary" onClick={submit}><PlusIcon size={15} /> Добавить</Btn>
@@ -1212,16 +1403,36 @@ function EmployeesPage({ employees, onAdd, onRemove, onOpenCard, canManage, myId
         {employees.map((emp) => {
           const month = monthByEmp[emp.id] || currentMonth();
           const canDelete = canManage || emp.created_by === myId;
+          const hist = employeeHistory(records, emp.id);
+          const last = hist[hist.length - 1];
+          const prev = hist[hist.length - 2];
+          const delta = last && prev ? last.overall - prev.overall : null;
           return (
             <Card key={emp.id} style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-              <div style={{ fontWeight: 500, color: TEXT }}>{emp.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                {last && <GradeBadge letter={last.grade} size={36} />}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 500, color: TEXT }}>{emp.name}</div>
+                  {last ? (
+                    <div style={{ fontSize: 12, color: MUTED, fontFamily: NUM_FONT, marginTop: 2 }}>
+                      {last.overall.toFixed(1)}% · {monthLabel(last.month)}
+                      {delta !== null && (
+                        <span style={{ color: delta >= 0 ? GREEN : RED, marginLeft: 6 }}>{delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}</span>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Расчётов ещё нет</div>
+                  )}
+                </div>
+                <Sparkline points={hist.slice(-6)} />
+              </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <input type="month" value={month} onChange={(e) => setMonthByEmp((p) => ({ ...p, [emp.id]: e.target.value }))}
                   style={{ fontSize: 14, padding: "7px 10px", borderRadius: 8, border: `1px solid ${BORDER}`, color: TEXT }} />
                 <Btn variant="primary" onClick={() => onOpenCard(emp.id, month)}>Открыть карточку KPI</Btn>
                 {canDelete && (
                   <button onClick={() => handleRemove(emp.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 4, background: confirmId === emp.id ? "#FBEAE8" : "none", border: confirmId === emp.id ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", opacity: confirmId === emp.id ? 1 : 0.6, padding: 6, color: RED, fontSize: 12 }}>
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: confirmId === emp.id ? RED_SOFT : "none", border: confirmId === emp.id ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", opacity: confirmId === emp.id ? 1 : 0.6, padding: 6, color: RED, fontSize: 12 }}>
                     <TrashIcon size={15} /> {confirmId === emp.id ? "Точно?" : ""}
                   </button>
                 )}
@@ -1281,7 +1492,7 @@ function ImportIndicatorsPanel({ onSave, onClose }) {
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()}
-              style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, padding: "9px 14px", borderRadius: 8, background: BLUE, color: "#fff", border: "none", cursor: "pointer", fontWeight: 500 }}>
+              style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, padding: "9px 14px", borderRadius: 8, background: BLUE, color: ON_PRIMARY, border: "none", cursor: "pointer", fontWeight: 500 }}>
               <UploadIcon size={16} /> Загрузить файл
             </button>
             <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv"
@@ -1290,7 +1501,7 @@ function ImportIndicatorsPanel({ onSave, onClose }) {
             {fileName && <span style={{ fontSize: 14, color: MUTED, display: "flex", alignItems: "center", gap: 6 }}><FileIcon size={14} /> {fileName}</span>}
           </div>
           {missing.length > 0 && (
-            <div style={{ fontSize: 14, color: RED, background: "#FBEAE8", border: `1px solid ${RED}`, borderRadius: 8, padding: "8px 12px", marginTop: 12 }}>
+            <div style={{ fontSize: 14, color: RED, background: RED_SOFT, border: `1px solid ${RED}`, borderRadius: 8, padding: "8px 12px", marginTop: 12 }}>
               В файле не нашлись обязательные колонки: {missing.join(", ")}. Переименуйте заголовки в файле (например «KPI», «Min», «Normal») и загрузите заново.
             </div>
           )}
@@ -1316,7 +1527,7 @@ function ImportIndicatorsPanel({ onSave, onClose }) {
                   {DEPARTMENT_PRESETS.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
                 <TextField value={department} onChange={setDepartment} placeholder="Своё название подразделения" style={{ minWidth: 180 }} />
-                <button onClick={() => setEditingDept(false)} style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "none", background: BLUE, color: "#fff", cursor: "pointer" }}>Готово</button>
+                <button onClick={() => setEditingDept(false)} style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "none", background: BLUE, color: ON_PRIMARY, cursor: "pointer" }}>Готово</button>
               </div>
             )}
           </div>
@@ -1369,7 +1580,7 @@ function GoalsImportPage({ settings, onChange }) {
         прямо здесь, перед сохранением.
       </p>
       {savedCount > 0 && (
-        <div style={{ fontSize: 13, color: GREEN, background: "#E4F5EA", border: "1px solid #1E8E5A", borderRadius: 8, padding: "8px 12px" }}>
+        <div style={{ fontSize: 13, color: GREEN, background: GREEN_SOFT, border: `1px solid ${GREEN}`, borderRadius: 8, padding: "8px 12px" }}>
           Добавлено показателей: {savedCount}. Проверить и настроить их можно на вкладке «Настройки KPI».
         </div>
       )}
@@ -1403,7 +1614,7 @@ function SettingsPage({ settings, onChange, isSuperAdmin, settingsTarget, onSwit
             {[{ id: "mine", label: "Мои настройки" }, { id: "default", label: "По умолчанию (для новых)" }].map((t) => (
               <button key={t.id} onClick={() => onSwitchTarget(t.id)}
                 style={{ fontSize: 12, padding: "6px 10px", borderRadius: 7, border: "none", cursor: "pointer",
-                  background: settingsTarget === t.id ? BLUE : "transparent", color: settingsTarget === t.id ? "#fff" : BLUE_DARK, fontWeight: settingsTarget === t.id ? 600 : 500 }}>
+                  background: settingsTarget === t.id ? BLUE : "transparent", color: settingsTarget === t.id ? ON_PRIMARY : BLUE_DARK, fontWeight: settingsTarget === t.id ? 600 : 500 }}>
                 {t.label}
               </button>
             ))}
@@ -1411,7 +1622,7 @@ function SettingsPage({ settings, onChange, isSuperAdmin, settingsTarget, onSwit
         )}
       </div>
       {isSuperAdmin && settingsTarget === "default" && (
-        <div style={{ fontSize: 12, color: AMBER, background: "#FBF3E3", border: `1px solid ${AMBER}`, borderRadius: 8, padding: "8px 12px" }}>
+        <div style={{ fontSize: 12, color: AMBER, background: AMBER_SOFT, border: `1px solid ${AMBER}`, borderRadius: 8, padding: "8px 12px" }}>
           Вы редактируете общий шаблон по умолчанию — его получают только НОВЫЕ пользователи при первом входе. На уже существующих пользователей (включая вас) это не влияет.
         </div>
       )}
@@ -1450,7 +1661,7 @@ function SettingsPage({ settings, onChange, isSuperAdmin, settingsTarget, onSwit
                   {[{ id: "higher", label: "Больше — лучше" }, { id: "lower", label: "Меньше — лучше" }].map((d) => (
                     <button key={d.id} onClick={() => updateIndicator(ind.id, { direction: d.id })}
                       style={{ fontSize: 12, padding: "5px 10px", borderRadius: 8, border: `1px solid ${BORDER}`, cursor: "pointer",
-                        background: dir === d.id ? BLUE : CARD_BG, color: dir === d.id ? "#fff" : TEXT }}>
+                        background: dir === d.id ? BLUE : CARD_BG, color: dir === d.id ? ON_PRIMARY : TEXT }}>
                       {d.label}
                     </button>
                   ))}
@@ -1488,7 +1699,7 @@ function SettingsPage({ settings, onChange, isSuperAdmin, settingsTarget, onSwit
           {[{ id: "linear", label: "Линейная" }, { id: "threshold", label: "Ступенчатая" }].map((f) => (
             <button key={f.id} onClick={() => onChange({ ...settings, formula_type: f.id })}
               style={{ fontSize: 14, padding: "7px 12px", borderRadius: 8, border: `1px solid ${BORDER}`, cursor: "pointer",
-                background: settings.formula_type === f.id ? BLUE : CARD_BG, color: settings.formula_type === f.id ? "#fff" : TEXT }}>
+                background: settings.formula_type === f.id ? BLUE : CARD_BG, color: settings.formula_type === f.id ? ON_PRIMARY : TEXT }}>
               {f.label}
             </button>
           ))}
@@ -1621,7 +1832,7 @@ function UsersPage({ users, onUpdateUser, onDeleteUser, myId, pendingRoles, onAd
                   <button onClick={() => handleDelete(u.id)}
                     style={{
                       display: "flex", alignItems: "center", gap: 6, fontSize: 13, padding: "6px 10px", borderRadius: 8,
-                      border: `1px solid ${confirmId === u.id ? RED : BORDER}`, background: confirmId === u.id ? "#FBEAE8" : "transparent",
+                      border: `1px solid ${confirmId === u.id ? RED : BORDER}`, background: confirmId === u.id ? RED_SOFT : "transparent",
                       color: RED, cursor: "pointer",
                     }}>
                     <TrashIcon size={14} /> {confirmId === u.id ? "Точно удалить?" : "Удалить"}
@@ -1713,30 +1924,18 @@ function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, 
             {recordId && (
               <button onClick={handleDelete}
                 style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, padding: "8px 12px", borderRadius: 8,
-                  border: `1px solid ${confirmDelete ? RED : BORDER}`, background: confirmDelete ? "#FBEAE8" : CARD_BG, color: RED, cursor: "pointer" }}>
+                  border: `1px solid ${confirmDelete ? RED : BORDER}`, background: confirmDelete ? RED_SOFT : CARD_BG, color: RED, cursor: "pointer" }}>
                 <TrashIcon size={14} /> {confirmDelete ? "Точно удалить расчёт?" : "Удалить расчёт"}
               </button>
             )}
           </div>
-          <div style={{ display: "grid", gap: 8, paddingTop: 12, borderTop: `1px solid ${BORDER}` }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 0.6fr 0.9fr 0.6fr 0.7fr", gap: 6, fontSize: 10, textTransform: "uppercase", color: MUTED }}>
-              <div>Показатель</div>
-              <div style={{ textAlign: "right" }}>Мин / Норма</div>
-              <div style={{ textAlign: "right" }}>Факт · оценка</div>
-              <div style={{ textAlign: "right" }}>Вес</div>
-              <div style={{ textAlign: "right" }}>Вклад</div>
-            </div>
-            {result.perIndicator.map((p) => (
-              <div key={p.id} style={{ display: "grid", gridTemplateColumns: "1.4fr 0.6fr 0.9fr 0.6fr 0.7fr", gap: 6, fontSize: 13, alignItems: "center" }}>
-                <span style={{ color: TEXT }}>{p.name}</span>
-                <span style={{ textAlign: "right", fontFamily: NUM_FONT, color: MUTED, fontSize: 12 }}>{p.min} / {p.norm}</span>
-                <span style={{ textAlign: "right", fontFamily: NUM_FONT, color: percentColor(p.percent) }}>
-                  {p.actual} · {p.percent.toFixed(0)}% ({gradeFor(p.percent, grades)})
-                </span>
-                <span style={{ textAlign: "right", fontFamily: NUM_FONT, color: MUTED }}>{p.weight}%</span>
-                <span style={{ textAlign: "right", fontFamily: NUM_FONT, color: TEXT, fontWeight: 600 }}>{p.contribution.toFixed(1)}%</span>
-              </div>
-            ))}
+          <div style={{ paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
+            <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 12 }}>Из чего сложился KPI</div>
+            <KpiBreakdown perIndicator={result.perIndicator} />
+          </div>
+          <div style={{ marginTop: 18, padding: "14px 16px", borderRadius: 12, background: BLUE_SOFT }}>
+            <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 6 }}>Как улучшить</div>
+            <NextGradeTip result={result} grades={grades} />
           </div>
         </Card>
       )}
@@ -1805,7 +2004,7 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, padding: "9px 14px", borderRadius: 8, background: BLUE, color: "#fff", border: "none", cursor: "pointer", fontWeight: 500 }}>
+            style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, padding: "9px 14px", borderRadius: 8, background: BLUE, color: ON_PRIMARY, border: "none", cursor: "pointer", fontWeight: 500 }}>
             <UploadIcon size={16} /> Загрузить файл
           </button>
           <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv"
@@ -1824,7 +2023,7 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
       {parsed && (
         <Card style={{ padding: 16 }}>
           {parsed.missingIndicators.length > 0 && (
-            <div style={{ fontSize: 14, color: RED, background: "#FBEAE8", border: `1px solid ${RED}`, borderRadius: 8, padding: "8px 12px", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, color: RED, background: RED_SOFT, border: `1px solid ${RED}`, borderRadius: 8, padding: "8px 12px", marginBottom: 12 }}>
               Ошибка: в файле не найдены столбцы для показателей — {parsed.missingIndicators.join(", ")}. Импорт заблокирован, пока не найдены все показатели.
             </div>
           )}
@@ -1879,7 +2078,7 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
                         if (!ok) setDeleteError(`Не удалось удалить «${s.name}» — попробуйте ещё раз.`);
                         setConfirmDeleteId(null);
                       }}
-                      style={{ display: "flex", alignItems: "center", gap: 4, background: confirmDeleteId === s.recordId ? "#FBEAE8" : "none", border: confirmDeleteId === s.recordId ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", padding: 6, color: RED, fontSize: 12 }}>
+                      style={{ display: "flex", alignItems: "center", gap: 4, background: confirmDeleteId === s.recordId ? RED_SOFT : "none", border: confirmDeleteId === s.recordId ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", padding: 6, color: RED, fontSize: 12 }}>
                       <TrashIcon size={14} /> {confirmDeleteId === s.recordId ? "Точно?" : ""}
                     </button>
                   )}
@@ -1944,7 +2143,7 @@ function HistoryPage({ employees, records, onOpen, onExportAll, onDeleteRecord, 
                 <div style={{ fontSize: 12, fontFamily: NUM_FONT, color: MUTED }}>{formatSum(afterTax(r.result.premium))} после налога</div>
                 <Btn onClick={() => onOpen(r.employee_id, r.month)}>Открыть</Btn>
                 <button onClick={() => handleDelete(r)}
-                  style={{ display: "flex", alignItems: "center", gap: 4, background: confirmKey === key ? "#FBEAE8" : "none", border: confirmKey === key ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", padding: 6, color: RED, fontSize: 12 }}>
+                  style={{ display: "flex", alignItems: "center", gap: 4, background: confirmKey === key ? RED_SOFT : "none", border: confirmKey === key ? `1px solid ${RED}` : "none", borderRadius: 8, cursor: "pointer", padding: 6, color: RED, fontSize: 12 }}>
                   <TrashIcon size={14} /> {confirmKey === key ? "Точно?" : ""}
                 </button>
               </div>
@@ -2272,12 +2471,16 @@ function KpiApp() {
   return (
     <div style={{ minHeight: "100vh", width: "100%", background: BG, color: TEXT }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>Unum · KPI сотрудников</div>
-            <h1 style={{ fontSize: 24, fontWeight: 600, color: TEXT, margin: 0 }}>Расчёт премии по показателям</h1>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <BrandMark size={40} />
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.03em", color: TEXT, lineHeight: 1.1 }}>unum<span style={{ color: MUTED, fontWeight: 500 }}>.kpi</span></div>
+              <div style={{ fontSize: 13, color: MUTED }}>Расчёт премии по показателям</div>
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ThemeSwitch />
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 13, color: TEXT }}>{profile.email || "Гость (без регистрации)"}</div>
               <RoleBadge role={profile.role} />
@@ -2294,7 +2497,7 @@ function KpiApp() {
           {view !== "card" && <TopNav view={view} setView={setView} profile={profile} />}
 
           {view === "employees" && (
-            <EmployeesPage employees={employees} onAdd={addEmployee} onRemove={removeEmployee}
+            <EmployeesPage employees={employees} records={records} onAdd={addEmployee} onRemove={removeEmployee}
               onOpenCard={(id, m) => openCard(id, m, "employees")} canManage={canManageEmployees(profile)} myId={profile.id} />
           )}
           {view === "import" && profile.role !== "user" && (
