@@ -458,17 +458,19 @@
   #landing .l-cl-keys .eq { background: #E0157A; color: #fff; font-size: 28px; }
   .l-cl-keys .zero { grid-column: span 2; text-align: left; padding-left: 26px; }
   /* национальные акценты на карточках */
-  .l-hat { position: absolute; width: 104px; height: 78px; top: -34px; right: 20px; transform: rotate(14deg); filter: drop-shadow(0 8px 10px rgba(6, 19, 49, .22)); pointer-events: none; z-index: 2; }
+  .l-hat { position: absolute; width: 104px; height: 78px; top: -40px; right: -30px; transform: rotate(24deg); filter: drop-shadow(0 8px 10px rgba(6, 19, 49, .22)); pointer-events: none; z-index: 2; }
   .l-hat-sm { width: 62px; height: 47px; top: -26px; right: -26px; transform: rotate(18deg); }
   .l-stat.has-hat, .l-feature-icon.has-hat { position: relative; overflow: visible; }
   .l-stat.l-side { padding-left: 46px; }
+  .l-stat.l-side.has-hat::before { width: 28px; border-radius: 28px 0 0 28px; -webkit-mask-image: linear-gradient(90deg, #000 18px, transparent 18px); mask-image: linear-gradient(90deg, #000 18px, transparent 18px); }
+  @media (max-width: 720px) { .l-stat.l-side.has-hat::before { width: 22px; border-radius: 22px 0 0 22px; } }
   .l-side::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 18px; background: var(--atlas) left top / 80px auto repeat-y; }
   .l-top-atlas { position: relative; overflow: hidden; }
   .l-top-atlas::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 12px; background: var(--atlas) left center / auto 100% repeat-x; }
   .l-pricing-atlas { position: relative; overflow: hidden; padding-right: 150px; }
   .l-pricing-atlas::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 80px; background: var(--atlas) left top / 80px auto repeat-y; }
   @media (max-width: 720px) {
-    .l-hat { width: 84px; height: 63px; top: -28px; right: 14px; }
+    .l-hat { width: 84px; height: 63px; top: -32px; right: -12px; }
     .l-hat-sm { width: 52px; height: 39px; top: -22px; right: -22px; }
     .l-pricing-atlas { padding-right: 22px; padding-top: 40px; }
     .l-pricing-atlas::after { left: 0; width: auto; bottom: auto; height: 16px; background: var(--atlas) left center / auto 100% repeat-x; }
@@ -753,10 +755,10 @@
         <div class="l-kicker">01 — Unum in numbers</div>
         <h2 data-i18n="num.title">KPI в цифрах — понятно с первого взгляда</h2>
         <div class="l-stat-grid">
-          <article class="l-stat has-hat"><svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg><b><span data-count="120">120</span>%</b><h3 data-i18n="num.s1">Потолок показателя</h3><p data-i18n="num.s1d">Перевыполнение до 120% компенсирует слабое место — честно для сотрудника.</p></article>
+          <article class="l-stat l-side has-hat"><svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg><b><span data-count="120">120</span>%</b><h3 data-i18n="num.s1">Потолок показателя</h3><p data-i18n="num.s1d">Перевыполнение до 120% компенсирует слабое место — честно для сотрудника.</p></article>
           <article class="l-stat l-side"><b><span data-count="7.5" data-dec="1">7,5</span>%</b><h3 data-i18n="num.s2">Налог учтён</h3><p data-i18n="num.s2d">Сразу видно премию и сумму «на руки» после налога.</p></article>
-          <article class="l-stat"><b><span data-count="5">5</span> A–F</b><h3 data-i18n="num.s3">Понятных оценок</h3><p data-i18n="num.s3d">Буква вместо сухих цифр: сотрудник сразу понимает свой уровень.</p></article>
-          <article class="l-stat"><b><span data-count="3">3</span></b><h3 data-i18n="num.s4">Языка</h3><p data-i18n="num.s4d">Русский, o‘zbekcha и English — для всей команды.</p></article>
+          <article class="l-stat l-side"><b><span data-count="5">5</span> A–F</b><h3 data-i18n="num.s3">Понятных оценок</h3><p data-i18n="num.s3d">Буква вместо сухих цифр: сотрудник сразу понимает свой уровень.</p></article>
+          <article class="l-stat l-side"><b><span data-count="3">3</span></b><h3 data-i18n="num.s4">Языка</h3><p data-i18n="num.s4d">Русский, o‘zbekcha и English — для всей команды.</p></article>
         </div>
         <div class="l-demo l-top-atlas">
           <div class="l-demo-ring">
