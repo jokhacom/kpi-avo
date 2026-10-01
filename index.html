@@ -278,7 +278,7 @@
   .l-donut { width: 140px; height: 140px; flex: none; }
   .l-kpi strong { display: block; font-size: 20px; margin-bottom: 8px; }
   .l-kpi span { color: rgba(11,22,48,.6); font-size: 16px; }
-  .l-feature-icon { width: 68px; height: 68px; border-radius: 20px; background: var(--l-lime); color: var(--l-lime-ink); display: grid; place-items: center; font-size: 28px; margin-bottom: 100px; }
+  .l-feature-icon { width: 68px; height: 68px; border-radius: 20px; background: var(--l-lime); color: var(--l-lime-ink); display: grid; place-items: center; font-size: 28px; margin-bottom: 56px; }
   .l-card-feature h3 { font-size: 26px; }
   .l-pricing { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; background: var(--l-navy); color: #fff; border-radius: 40px; padding: 48px; }
   .l-pricing p { color: rgba(255,255,255,.7); font-size: 19px; max-width: 640px; line-height: 1.6; }
@@ -457,6 +457,22 @@
   .l-cl-keys .op[aria-pressed="true"] { background: #fff; }
   #landing .l-cl-keys .eq { background: #E0157A; color: #fff; font-size: 28px; }
   .l-cl-keys .zero { grid-column: span 2; text-align: left; padding-left: 26px; }
+  /* национальные акценты на карточках */
+  .l-hat { position: absolute; width: 104px; height: 78px; top: -34px; right: 20px; transform: rotate(14deg); filter: drop-shadow(0 8px 10px rgba(6, 19, 49, .22)); pointer-events: none; z-index: 2; }
+  .l-hat-sm { width: 62px; height: 47px; top: -26px; right: -26px; transform: rotate(18deg); }
+  .l-stat.has-hat, .l-feature-icon.has-hat { position: relative; overflow: visible; }
+  .l-stat.l-side { padding-left: 46px; }
+  .l-side::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 18px; background: var(--atlas) left top / 80px auto repeat-y; }
+  .l-top-atlas { position: relative; overflow: hidden; }
+  .l-top-atlas::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 12px; background: var(--atlas) left center / auto 100% repeat-x; }
+  .l-pricing-atlas { position: relative; overflow: hidden; padding-right: 150px; }
+  .l-pricing-atlas::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 80px; background: var(--atlas) left top / 80px auto repeat-y; }
+  @media (max-width: 720px) {
+    .l-hat { width: 84px; height: 63px; top: -28px; right: 14px; }
+    .l-hat-sm { width: 52px; height: 39px; top: -22px; right: -22px; }
+    .l-pricing-atlas { padding-right: 22px; padding-top: 40px; }
+    .l-pricing-atlas::after { left: 0; width: auto; bottom: auto; height: 16px; background: var(--atlas) left center / auto 100% repeat-x; }
+  }
   .l-made { display: inline-flex; align-items: center; gap: 8px; }
 
   @media (max-width: 1100px) {
@@ -737,12 +753,12 @@
         <div class="l-kicker">01 — Unum in numbers</div>
         <h2 data-i18n="num.title">KPI в цифрах — понятно с первого взгляда</h2>
         <div class="l-stat-grid">
-          <article class="l-stat"><b><span data-count="120">120</span>%</b><h3 data-i18n="num.s1">Потолок показателя</h3><p data-i18n="num.s1d">Перевыполнение до 120% компенсирует слабое место — честно для сотрудника.</p></article>
-          <article class="l-stat"><b><span data-count="7.5" data-dec="1">7,5</span>%</b><h3 data-i18n="num.s2">Налог учтён</h3><p data-i18n="num.s2d">Сразу видно премию и сумму «на руки» после налога.</p></article>
+          <article class="l-stat has-hat"><svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg><b><span data-count="120">120</span>%</b><h3 data-i18n="num.s1">Потолок показателя</h3><p data-i18n="num.s1d">Перевыполнение до 120% компенсирует слабое место — честно для сотрудника.</p></article>
+          <article class="l-stat l-side"><b><span data-count="7.5" data-dec="1">7,5</span>%</b><h3 data-i18n="num.s2">Налог учтён</h3><p data-i18n="num.s2d">Сразу видно премию и сумму «на руки» после налога.</p></article>
           <article class="l-stat"><b><span data-count="5">5</span> A–F</b><h3 data-i18n="num.s3">Понятных оценок</h3><p data-i18n="num.s3d">Буква вместо сухих цифр: сотрудник сразу понимает свой уровень.</p></article>
           <article class="l-stat"><b><span data-count="3">3</span></b><h3 data-i18n="num.s4">Языка</h3><p data-i18n="num.s4d">Русский, o‘zbekcha и English — для всей команды.</p></article>
         </div>
-        <div class="l-demo">
+        <div class="l-demo l-top-atlas">
           <div class="l-demo-ring">
             <svg viewBox="0 0 170 170" aria-hidden="true"><circle cx="85" cy="85" r="72" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="14"/><circle class="l-demo-arc" cx="85" cy="85" r="72" fill="none" stroke="#EAFF00" stroke-width="14" stroke-linecap="round" stroke-dasharray="452.4" stroke-dashoffset="452.4" transform="rotate(-90 85 85)" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/></svg>
             <div><b><span data-count="81.4" data-dec="1">81,4</span>%</b><small data-i18n="num.avg">средний KPI</small></div>
@@ -778,7 +794,7 @@
           </article>
           <article class="l-card">
             <div class="l-card-top"><span>02</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
-            <div class="l-mock l-mock-dark" aria-hidden="true">
+            <div class="l-mock l-mock-dark l-top-atlas" aria-hidden="true">
               <div class="l-mock-head"><span data-i18n="s2.mock">Настройка KPI</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
               <div class="l-meter"><div><span data-i18n="s2.quality">Качество</span><b>40%</b></div><div class="l-meter-bar"><span style="width:40%"></span></div></div>
               <div class="l-meter"><div><span data-i18n="s2.speed">Скорость</span><b>60%</b></div><div class="l-meter-bar"><span style="width:60%"></span></div></div>
@@ -838,7 +854,7 @@
         <h2 data-i18n="nav.features">Возможности</h2>
         <div class="l-cards">
           <article class="l-card l-card-feature">
-            <div class="l-feature-icon"><svg class="l-icon"><use href="#i-gauge"/></svg></div>
+            <div class="l-feature-icon has-hat"><svg class="l-icon"><use href="#i-gauge"/></svg><svg class="l-hat l-hat-sm" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg></div>
             <h3 data-i18n="f1.title">Расчёт KPI</h3>
             <p data-i18n="f1.desc">Точные показатели и прозрачная формула результата для каждого сотрудника.</p>
           </article>
@@ -860,7 +876,7 @@
       <div class="l-wrap">
         <div class="l-kicker">05 — Pricing</div>
         <h2 data-i18n="nav.pricing">Цены</h2>
-        <div class="l-pricing">
+        <div class="l-pricing l-pricing-atlas">
           <p data-i18n="pricing.text">Стоимость зависит от размера команды и набора модулей. Войдите, чтобы попробовать систему, — условия подберём индивидуально.</p>
           <button type="button" class="l-btn" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
         </div>
@@ -1475,6 +1491,15 @@ function EmptyState({ text }) {
 function AtlasRibbon({ height = 12 }) {
   return <div aria-hidden="true" style={{ height, background: "var(--atlas) left center / auto 100% repeat-x" }} />;
 }
+// Доппи, надетая немного набок, — на углу карточки.
+function DoppiHat({ size = 64, top = -24, right = 14, rotate = 14 }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 200 150"
+      style={{ position: "absolute", width: size, height: size * 0.75, top, right, transform: `rotate(${rotate}deg)`, filter: "drop-shadow(0 6px 8px rgba(6,19,49,.25))", pointerEvents: "none", zIndex: 1 }}>
+      <use href="#i-doppi" />
+    </svg>
+  );
+}
 const GRADE_WORD = { A: "Barakalla!", B: "Zo‘r!", C: "Yomon emas", D: "Harakat qiling", F: "Hali oldinda" };
 const GRADE_HINT = { A: "отлично", B: "хорошо", C: "неплохо", D: "постарайтесь", F: "всё впереди" };
 function RoleBadge({ role }) {
@@ -1585,8 +1610,9 @@ function TeamPulse({ employees, records }) {
   const needHelp = rows.filter((r) => Number(r.result.overall) < 50).length;
   const missing = employees.length - rows.length;
   const nameOf = (id) => employees.find((e) => e.id === id)?.name || "—";
-  const tile = (label, value, note, accent) => (
-    <Card style={{ padding: 16, flex: "1 1 180px", minWidth: 0 }}>
+  const tile = (label, value, note, accent, hat) => (
+    <Card style={{ padding: 16, flex: "1 1 180px", minWidth: 0, position: "relative" }}>
+      {hat && <DoppiHat size={58} top={-22} right={12} rotate={15} />}
       <div style={{ fontSize: 12, color: MUTED, marginBottom: 6 }}>{label}</div>
       <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", color: accent || TEXT, fontFamily: NUM_FONT }}>{value}</div>
       <div style={{ fontSize: 12, color: MUTED, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{note}</div>
@@ -1600,7 +1626,7 @@ function TeamPulse({ employees, records }) {
       </div>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         {tile("Средний KPI", `${avg.toFixed(1)}%`, `рассчитано: ${rows.length} из ${employees.length}`)}
-        {tile("Лучший результат", `${Number(best.result.overall).toFixed(1)}%`, nameOf(best.employee_id))}
+        {tile("Лучший результат", `${Number(best.result.overall).toFixed(1)}%`, nameOf(best.employee_id), null, true)}
         {tile("Нужна поддержка", needHelp, needHelp ? "KPI ниже 50%" : "все выше 50%", needHelp ? RED : GREEN)}
       </div>
       {missing > 0 && <div style={{ fontSize: 12, color: MUTED, marginTop: 8 }}>Ещё не рассчитаны за этот месяц: {missing}.</div>}
@@ -1729,7 +1755,8 @@ function AuthScreen({ onAuthed, onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--atlas) left top / auto 12px repeat-x, var(--a-bg)" }}>
-      <Card style={{ padding: 28, width: 340 }}>
+      <Card style={{ padding: 28, width: 340, position: "relative" }}>
+        <DoppiHat size={78} top={-32} right={-18} rotate={16} />
         <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 4 }}>Unum · KPI сотрудников</div>
         <h1 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 20px", color: TEXT }}>{mode === "login" ? "Вход" : "Регистрация"}</h1>
         <div style={{ display: "grid", gap: 10, marginBottom: 14 }}>
@@ -2283,7 +2310,8 @@ function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, 
       </div>
 
       {result && (
-        <Card style={{ padding: 20 }}>
+        <Card style={{ padding: 20, position: "relative" }}>
+          {result.grade === "A" && <DoppiHat size={64} top={-26} right={18} rotate={14} />}
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
             <div>
               <div style={{ fontSize: 11, textTransform: "uppercase", color: MUTED }}>Общий KPI</div>
