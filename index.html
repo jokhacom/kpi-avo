@@ -3,12 +3,329 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KPI сотрудников</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>AVO KPI — система расчёта и управления KPI</title>
+<meta name="description" content="Прозрачно измеряйте результат команды, автоматизируйте расчёты KPI и премий, импортируйте данные из Excel / CSV." />
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<script>
+/*
+ * Быстрый старт. Лендинг ниже — обычный HTML/CSS, он показывается сразу, без React и Babel.
+ * Тяжёлые библиотеки приложения (React, Babel ~3 МБ, Supabase, XLSX) грузятся только когда
+ * они нужны: сразу — если пользователь уже входил, иначе — в фоне после загрузки лендинга
+ * или по кнопке «Войти».
+ */
+(function () {
+  var root = document.documentElement;
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  };
+  function hasSupabaseSession() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        if (/^sb-.+-auth-token$/.test(localStorage.key(i))) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  // тема: light / dark / system
+  var theme = store.get("avo-theme") || "system";
+  if (theme !== "system") root.setAttribute("data-theme", theme);
+  root.setAttribute("data-theme-choice", theme);
+
+  // язык лендинга
+  var lang = store.get("avo-lang") || "ru";
+  root.setAttribute("lang", lang);
+
+  var inApp = store.get("kpi-past-landing") === "1" || hasSupabaseSession();
+  if (inApp) root.classList.add("app-mode");
+
+  var APP_SCRIPTS = [
+    "https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js",
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+    "https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js",
+  ];
+  var XLSX_SCRIPT = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+
+  function addScript(src, onload, onerror) {
+    var s = document.createElement("script");
+    s.src = src;
+    s.async = false; // качаются параллельно, выполняются по порядку
+    if (onload) s.onload = onload;
+    if (onerror) s.onerror = onerror;
+    document.head.appendChild(s);
+  }
+
+  var appRequested = false;
+  var failed = false;
+  function loadApp() {
+    if (appRequested) return;
+    appRequested = true;
+    var fail = function () {
+      if (failed) return;
+      failed = true;
+      var el = document.getElementById("root");
+      if (el) el.innerHTML = '<div class="app-boot">Не удалось загрузить приложение — проверьте интернет и обновите страницу.</div>';
+    };
+    APP_SCRIPTS.forEach(function (src, i) {
+      addScript(src, i === APP_SCRIPTS.length - 1 ? function () {
+        if (failed) return;
+        window.Babel.transformScriptTags();
+        // Excel нужен только для импорта/экспорта — грузим без блокировки интерфейса
+        addScript(XLSX_SCRIPT);
+      } : null, fail);
+    });
+  }
+
+  function enterApp() {
+    store.set("kpi-past-landing", "1");
+    // фоновая загрузка не удалась (например, пропала сеть) — пробуем заново с чистой страницы
+    if (failed) { window.location.reload(); return; }
+    root.classList.add("app-mode");
+    window.scrollTo(0, 0);
+    loadApp();
+    window.dispatchEvent(new Event("kpi:enter"));
+  }
+
+  window.KpiBoot = { loadApp: loadApp, enterApp: enterApp, store: store };
+
+  if (inApp) {
+    loadApp();
+  } else {
+    // гость на лендинге: подгружаем приложение в фоне, когда страница уже показана
+    window.addEventListener("load", function () {
+      var idle = window.requestIdleCallback || function (cb) { return setTimeout(cb, 1500); };
+      idle(loadApp, { timeout: 4000 });
+    });
+  }
+})();
+</script>
+<style>
+  :root {
+    --l-bg: #F5F7FA;
+    --l-surface: #FFFFFF;
+    --l-surface-2: #F0F2F6;
+    --l-border: #E3E7EF;
+    --l-text: #0B1630;
+    --l-muted: #6B7385;
+    --l-faint: #A3AAB8;
+    --l-navy: #061331;
+    --l-navy-2: #0F1D3D;
+    --l-lime: #EAFF00;
+    --l-lime-ink: #0B1630;
+    --l-cta-bg: #061331;
+    --l-cta-fg: #EAFF00;
+    --l-shadow: 0 1px 2px rgba(11, 22, 48, 0.04), 0 8px 24px rgba(11, 22, 48, 0.05);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --l-bg: #060C19;
+      --l-surface: #0D172B;
+      --l-surface-2: #13203A;
+      --l-border: #1E2B45;
+      --l-text: #F3F5F8;
+      --l-muted: #93A0B4;
+      --l-faint: #5D6A82;
+      --l-navy: #0A1427;
+      --l-navy-2: #15233F;
+      --l-shadow: none;
+      --l-cta-bg: #EAFF00;
+      --l-cta-fg: #0B1630;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --l-bg: #060C19;
+    --l-surface: #0D172B;
+    --l-surface-2: #13203A;
+    --l-border: #1E2B45;
+    --l-text: #F3F5F8;
+    --l-muted: #93A0B4;
+    --l-faint: #5D6A82;
+    --l-navy: #0A1427;
+    --l-navy-2: #15233F;
+    --l-shadow: none;
+    --l-cta-bg: #EAFF00;
+    --l-cta-fg: #0B1630;
+    color-scheme: dark;
+  }
+
+  html.app-mode #landing { display: none; }
+  html:not(.app-mode) #root { display: none; }
+  html:not(.app-mode) body { background: var(--l-bg); }
+  .app-boot { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #6B7385; font-size: 14px; background: #F4F6FA; text-align: center; }
+
+  #landing { min-height: 100vh; background: var(--l-bg); color: var(--l-text); font-size: 16px; line-height: 1.5; overflow-x: hidden; }
+  #landing a { color: inherit; text-decoration: none; }
+  #landing button { font: inherit; }
+  :where(#landing) :where(h1, h2, h3, p) { margin: 0; }
+  .l-wrap { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
+  .l-kicker { font-size: 13px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--l-faint); font-weight: 500; }
+  .l-icon { width: 1em; height: 1em; flex: none; }
+
+  /* header */
+  .l-header { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--l-bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .l-header .l-wrap { display: flex; align-items: center; gap: 24px; height: 84px; }
+  .l-logo { display: flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 600; letter-spacing: 0.02em; }
+  .l-logo-mark { width: 44px; height: 44px; border-radius: 10px; background: #000; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 16px; letter-spacing: -0.04em; }
+  .l-logo .l-dim { color: var(--l-faint); font-weight: 500; }
+  .l-nav { display: flex; gap: 40px; margin: 0 auto; font-size: 17px; color: var(--l-muted); }
+  .l-nav a:hover { color: var(--l-text); }
+  .l-nav .l-login { color: var(--l-text); background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 17px; }
+  .l-controls { display: flex; gap: 12px; }
+  .l-seg { display: flex; padding: 4px; gap: 2px; border-radius: 999px; background: var(--l-surface); border: 1px solid var(--l-border); }
+  .l-seg button { border: 0; background: none; cursor: pointer; border-radius: 999px; min-width: 40px; height: 36px; padding: 0 12px; font-size: 13px; font-weight: 700; color: var(--l-text); display: grid; place-items: center; }
+  .l-seg button[aria-pressed="true"] { background: var(--l-cta-bg); color: var(--l-cta-fg); }
+  .l-seg.l-theme button { padding: 0; width: 36px; min-width: 0; color: var(--l-muted); font-size: 16px; }
+  
+
+  /* hero */
+  .l-hero .l-wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 56px; padding-top: 64px; padding-bottom: 96px; align-items: start; }
+  .l-hero-copy { padding-top: 56px; }
+  .l-hero h1 { font-size: clamp(44px, 6.4vw, 104px); line-height: 0.98; letter-spacing: -0.045em; font-weight: 700; margin: 28px 0 40px; }
+  .l-hero h1 em { font-style: normal; color: var(--l-faint); }
+  .l-lead { font-size: clamp(17px, 1.6vw, 22px); line-height: 1.75; color: var(--l-muted); max-width: 560px; }
+  .l-ctas { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 44px; }
+  .l-btn { display: inline-flex; align-items: center; gap: 12px; height: 60px; padding: 0 30px; border-radius: 999px; font-size: 18px; cursor: pointer; border: 1px solid var(--l-border); background: var(--l-surface); color: var(--l-text); transition: transform .15s ease; }
+  .l-btn:hover { transform: translateY(-1px); }
+  .l-btn-primary { background: var(--l-cta-bg); border-color: var(--l-cta-bg); color: var(--l-cta-fg); font-weight: 600; }
+  .l-checks { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 36px; color: var(--l-muted); font-size: 15px; list-style: none; padding: 0; }
+  .l-checks li { display: flex; align-items: center; gap: 8px; }
+
+  /* motion visual */
+  .l-viz-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  .l-viz-sub { color: var(--l-muted); font-size: 17px; margin-top: 10px; }
+  .l-pause { width: 52px; height: 52px; flex: none; color: var(--l-text); border-radius: 50%; border: 1px solid var(--l-border) !important; background: var(--l-surface); cursor: pointer; display: grid; place-items: center; box-shadow: var(--l-shadow); }
+  .l-pill { display: inline-block; margin: 22px 0 18px; padding: 6px 18px; border-radius: 999px; background: var(--l-lime); color: var(--l-lime-ink); font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+  .l-viz { background: var(--l-lime); color: var(--l-lime-ink); border-radius: 36px; padding: 32px 28px 26px; }
+  .l-viz-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; padding: 0 26px 22px; }
+  .l-live { display: flex; align-items: center; gap: 10px; letter-spacing: 0.06em; }
+  .l-live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: l-blink 1.6s ease-in-out infinite; }
+  .l-panel { background: var(--l-navy); color: #fff; border-radius: 28px; padding: 32px 28px 28px; }
+  .l-panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 16px; align-items: center; position: relative; }
+  .l-label { font-size: 12px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; }
+  .l-avatars { display: grid; grid-template-columns: repeat(3, 48px); gap: 10px; margin: 22px 0 28px; }
+  .l-avatar { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid rgba(234, 255, 0, 0.45); background: rgba(234, 255, 0, 0.08); display: grid; place-items: center; color: rgba(255,255,255,0.75); font-size: 20px; animation: l-glow 3.2s ease-in-out infinite; }
+  .l-avatar:nth-child(2) { animation-delay: .4s; } .l-avatar:nth-child(3) { animation-delay: .8s; }
+  .l-avatar:nth-child(4) { animation-delay: 1.2s; } .l-avatar:nth-child(5) { animation-delay: 1.6s; }
+  .l-track { position: relative; display: flex; gap: 6px; height: 6px; align-items: center; }
+  .l-track span { flex: 1; height: 5px; border-radius: 3px; background: rgba(234, 255, 0, 0.75); }
+  .l-track i { position: absolute; top: 50%; left: 0; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: var(--l-lime); box-shadow: 0 0 12px var(--l-lime); animation: l-travel 3.2s cubic-bezier(.6,0,.4,1) infinite; }
+  .l-track-label { margin-top: 18px; font-size: 14px; color: rgba(255,255,255,0.8); }
+  .l-ring { position: relative; width: clamp(180px, 15vw, 240px); height: clamp(180px, 15vw, 240px); display: grid; place-items: center; text-align: center; }
+  .l-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .l-ring .l-spin { transform-origin: center; transform-box: fill-box; animation: l-rotate 14s linear infinite; }
+  .l-ring .l-arc { stroke-dasharray: 600; stroke-dashoffset: 600; animation: l-draw 3.2s ease-out infinite; }
+  .l-ring-value { font-size: clamp(34px, 3vw, 46px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; margin: 6px 0 2px; }
+  .l-ring small { font-size: 12px; color: rgba(255,255,255,0.8); }
+  .l-auto { position: absolute; top: 8px; right: -6px; background: var(--l-lime); color: var(--l-lime-ink); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 6px; }
+  .l-result { justify-self: stretch; text-align: left; min-width: 0; }
+  .l-result .l-label { text-align: right; margin-bottom: 16px; letter-spacing: 0.18em; }
+  .l-result-card { background: var(--l-lime); color: var(--l-lime-ink); border-radius: 20px; padding: 20px 18px; animation: l-pop 3.2s ease-out infinite; }
+  .l-result-card b { display: block; font-size: clamp(28px, 2.6vw, 40px); letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 10px; }
+  .l-result-card p { font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 10px; }
+  .l-result-card .l-delta { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; margin-top: 2px; }
+  .l-history { margin-top: 40px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.06); border-radius: 22px; padding: 20px 22px 20px; }
+  .l-history-head { display: flex; justify-content: space-between; color: rgba(255,255,255,0.3); font-size: 13px; }
+  .l-history-head .l-label { font-size: 13px; letter-spacing: 0.24em; text-transform: none; }
+  .l-bars { display: flex; gap: 14px; align-items: flex-end; height: 80px; margin-top: 18px; }
+  .l-bars span { flex: 1; background: var(--l-lime); border-radius: 8px 8px 2px 2px; transform-origin: bottom; animation: l-grow 3.2s ease-out infinite; }
+  .l-steps { display: flex; align-items: center; gap: 20px; padding: 26px 26px 0; font-size: 13px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+  .l-steps i { flex: 1; border-top: 1.5px dashed rgba(11, 22, 48, 0.45); }
+  .l-viz-paused .l-viz *, .l-viz-paused .l-viz *::before { animation-play-state: paused !important; }
+
+  @keyframes l-blink { 50% { opacity: .25; } }
+  @keyframes l-glow { 0%, 100% { border-color: rgba(234,255,0,.35); } 50% { border-color: rgba(234,255,0,.95); box-shadow: 0 0 14px rgba(234,255,0,.25); } }
+  @keyframes l-travel { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: calc(100% - 14px); opacity: 0; } }
+  @keyframes l-rotate { to { transform: rotate(360deg); } }
+  @keyframes l-draw { 0% { stroke-dashoffset: 600; } 55%, 100% { stroke-dashoffset: 200; } }
+  @keyframes l-pop { 0%, 45% { transform: scale(.97); opacity: .85; } 60%, 100% { transform: scale(1); opacity: 1; } }
+  @keyframes l-grow { 0% { transform: scaleY(.15); } 50%, 100% { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    #landing *, #landing *::before { animation: none !important; transition: none !important; }
+    .l-ring .l-arc { stroke-dashoffset: 200; }
+  }
+
+  /* sections */
+  .l-section { padding: 72px 0 96px; }
+  .l-section h2 { font-size: clamp(36px, 4vw, 60px); letter-spacing: -0.03em; font-weight: 700; margin: 20px 0 56px; }
+  .l-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; }
+  .l-card { background: var(--l-surface); border: 1px solid var(--l-border); border-radius: 40px; padding: 36px 36px 40px; box-shadow: var(--l-shadow); }
+  .l-card h3 { font-size: 30px; letter-spacing: -0.02em; font-weight: 700; margin-bottom: 18px; }
+  .l-card p { font-size: 19px; color: var(--l-muted); line-height: 1.6; }
+  .l-card-top { display: flex; justify-content: space-between; color: var(--l-faint); font-size: 20px; margin-bottom: 30px; }
+  .l-mock { border-radius: 30px; padding: 30px 28px; height: 276px; margin-bottom: 44px; overflow: hidden; }
+  .l-mock-light { background: var(--l-surface-2); }
+  .l-mock-dark { background: var(--l-navy); color: #fff; }
+  .l-mock-lime { background: var(--l-lime); color: var(--l-lime-ink); }
+  .l-mock-head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+  .l-mock-light .l-mock-head { color: var(--l-muted); }
+  .l-mock-dark .l-mock-head { color: var(--l-lime); }
+  .l-mock-lime .l-mock-head { color: rgba(11,22,48,.65); }
+  .l-plus { width: 48px; height: 48px; border-radius: 50%; background: var(--l-lime); color: var(--l-lime-ink); display: grid; place-items: center; font-size: 26px; }
+  .l-row { display: flex; align-items: center; gap: 14px; background: var(--l-surface); border-radius: 22px; padding: 14px; margin-top: 16px; box-shadow: var(--l-shadow); }
+  .l-row b { width: 48px; height: 48px; border-radius: 50%; background: var(--l-navy); color: var(--l-lime); display: grid; place-items: center; font-size: 15px; }
+  .l-row span { height: 12px; width: 40%; border-radius: 6px; background: var(--l-border); }
+  .l-row i { margin-left: auto; height: 12px; width: 54px; border-radius: 6px; background: var(--l-lime); }
+  .l-meter { margin-top: 34px; font-size: 16px; }
+  .l-meter div { display: flex; justify-content: space-between; }
+  .l-meter div b { color: var(--l-lime); }
+  .l-meter-bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.12); margin-top: 18px; overflow: hidden; }
+  .l-meter-bar span { display: block; height: 100%; background: var(--l-lime); border-radius: 4px; }
+  .l-kpi { display: flex; align-items: center; gap: 28px; margin-top: 30px; }
+  .l-donut { width: 140px; height: 140px; flex: none; }
+  .l-kpi strong { display: block; font-size: 20px; margin-bottom: 8px; }
+  .l-kpi span { color: rgba(11,22,48,.6); font-size: 16px; }
+  .l-feature-icon { width: 68px; height: 68px; border-radius: 20px; background: var(--l-lime); color: var(--l-lime-ink); display: grid; place-items: center; font-size: 28px; margin-bottom: 100px; }
+  .l-card-feature h3 { font-size: 26px; }
+  .l-pricing { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; background: var(--l-navy); color: #fff; border-radius: 40px; padding: 48px; }
+  .l-pricing p { color: rgba(255,255,255,.7); font-size: 19px; max-width: 640px; line-height: 1.6; }
+  .l-pricing .l-btn { background: var(--l-lime); border-color: var(--l-lime); color: var(--l-lime-ink); font-weight: 600; }
+  .l-footer { border-top: 1px solid var(--l-border); }
+  .l-footer .l-wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 28px; padding-bottom: 28px; color: var(--l-muted); font-size: 14px; }
+
+  @media (max-width: 1100px) {
+    .l-nav { display: none; }
+    .l-controls { margin-left: auto; }
+    .l-hero .l-wrap { grid-template-columns: 1fr; padding-top: 24px; }
+    .l-hero-copy { padding-top: 24px; }
+    .l-cards { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .l-wrap { padding: 0 16px; }
+    .l-header .l-wrap { height: auto; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; gap: 12px; }
+    .l-logo { font-size: 18px; }
+    .l-logo-mark { width: 38px; height: 38px; }
+    .l-controls { width: 100%; justify-content: space-between; margin: 0; }
+    .l-seg button { height: 32px; min-width: 34px; padding: 0 8px; }
+    .l-seg.l-theme button { width: 32px; }
+    .l-hero .l-wrap { gap: 48px; padding-bottom: 56px; }
+    .l-btn { height: 52px; padding: 0 22px; font-size: 16px; }
+    .l-viz { border-radius: 26px; padding: 20px 12px 18px; }
+    .l-viz-top, .l-steps { padding-left: 10px; padding-right: 10px; }
+    .l-steps { gap: 8px; font-size: 10px; letter-spacing: 0.08em; }
+    .l-panel { padding: 24px 18px; border-radius: 20px; }
+    .l-panel-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .l-avatars { grid-template-columns: repeat(5, 44px); gap: 8px; justify-content: center; }
+    .l-avatar { width: 44px; height: 44px; font-size: 18px; }
+    .l-result, .l-result .l-label { justify-self: center; text-align: center; }
+    .l-result-card { min-width: 220px; }
+    .l-ring { width: 210px; height: 210px; }
+    .l-ring-value { font-size: 40px; }
+    .l-section { padding: 40px 0 56px; }
+    .l-section h2 { margin-bottom: 32px; }
+    .l-card { border-radius: 28px; padding: 24px 20px 28px; }
+    .l-mock { height: auto; min-height: 220px; padding: 22px 18px; border-radius: 22px; margin-bottom: 28px; }
+    .l-card h3 { font-size: 24px; }
+    .l-card p { font-size: 16px; }
+    .l-feature-icon { margin-bottom: 48px; }
+    .l-donut { width: 110px; height: 110px; }
+    .l-pricing { padding: 28px 22px; border-radius: 28px; }
+  }
+</style>
 <script>
 /*
  * KpiCore — единственное место, где описана логика расчёта KPI.
@@ -130,7 +447,328 @@
 </style>
 </head>
 <body>
-<div id="root"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c.7-3.4 3.1-5 6-5s5.3 1.6 6 5M16 4.6a3.4 3.4 0 0 1 0 6.6M18 15.3c1.7.6 2.7 2 3 4.7"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 5v14l11-7Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8M15 7h6v6"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 17a8.5 8.5 0 1 1 15 0"/><path d="m12 13 3.5-3.5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h2M13 13h2M9 17h2M13 17h2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 3 8 7 9.5 4-1.5 7-5.2 7-9.5V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+</svg>
+
+<div id="landing">
+  <header class="l-header">
+    <div class="l-wrap">
+      <a class="l-logo" href="#top" aria-label="AVO KPI"><span class="l-logo-mark">AV</span><span>AVO <span class="l-dim">KPI</span></span></a>
+      <nav class="l-nav">
+        <a href="#features" data-i18n="nav.features">Возможности</a>
+        <a href="#how" data-i18n="nav.how">Как это работает</a>
+        <a href="#pricing" data-i18n="nav.pricing">Цены</a>
+        <button type="button" class="l-login" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+      </nav>
+      <div class="l-controls">
+        <div class="l-seg" role="group" aria-label="Language">
+          <button type="button" data-lang="ru">RU</button>
+          <button type="button" data-lang="uz">UZ</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+        <div class="l-seg l-theme" role="group" aria-label="Theme">
+          <button type="button" data-theme-set="light" data-i18n-label="theme.light"><svg class="l-icon"><use href="#i-sun"/></svg></button>
+          <button type="button" data-theme-set="dark" data-i18n-label="theme.dark"><svg class="l-icon"><use href="#i-moon"/></svg></button>
+          <button type="button" data-theme-set="system" data-i18n-label="theme.system"><svg class="l-icon"><use href="#i-monitor"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="l-hero">
+      <div class="l-wrap">
+        <div class="l-hero-copy">
+          <div class="l-kicker">AVO Bank · Performance platform</div>
+          <h1 data-i18n-html="hero.title">Система расчёта и&nbsp;управления <em>KPI</em></h1>
+          <p class="l-lead" data-i18n="hero.lead">Прозрачно измеряйте результат команды, автоматизируйте расчёты и принимайте решения на основе данных.</p>
+          <div class="l-ctas">
+            <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="hero.cta">Рассчитать KPI</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+            <a class="l-btn" href="#pricing" data-i18n="nav.pricing">Цены</a>
+          </div>
+          <ul class="l-checks">
+            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check1">До 120% по показателю</span></li>
+            <li><svg class="l-icon"><use href="#i-check"/></svg><span>Excel / CSV</span></li>
+            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check3">Роли и права</span></li>
+          </ul>
+        </div>
+
+        <div class="l-hero-viz" id="viz">
+          <div class="l-viz-head">
+            <div>
+              <div class="l-kicker" data-i18n="viz.kicker">AVO KPI / Моушн-визуал</div>
+              <p class="l-viz-sub" data-i18n="viz.sub">Каждый этап расчёта виден и понятен.</p>
+            </div>
+            <button type="button" class="l-pause" id="viz-toggle" aria-pressed="false" data-i18n-label="viz.pause"><svg class="l-icon"><use href="#i-pause"/></svg></button>
+          </div>
+          <span class="l-pill" data-i18n="viz.flow">Поток данных</span>
+          <div class="l-viz" aria-hidden="true">
+            <div class="l-viz-top"><span data-i18n="viz.employees">Сотрудники</span><span class="l-live">Live flow</span></div>
+            <div class="l-panel">
+              <div class="l-panel-grid">
+                <div>
+                  <div class="l-label" data-i18n="viz.employees">Сотрудники</div>
+                  <div class="l-avatars">
+                    <span class="l-avatar"><svg class="l-icon"><use href="#i-users"/></svg></span>
+                    <span class="l-avatar"><svg class="l-icon"><use href="#i-user"/></svg></span>
+                    <span class="l-avatar"><svg class="l-icon"><use href="#i-user"/></svg></span>
+                    <span class="l-avatar"><svg class="l-icon"><use href="#i-user"/></svg></span>
+                    <span class="l-avatar"><svg class="l-icon"><use href="#i-user"/></svg></span>
+                  </div>
+                  <div class="l-track"><span></span><span></span><span></span><span></span><span></span><i></i></div>
+                  <div class="l-track-label" data-i18n="viz.data">Данные · Результат</div>
+                </div>
+                <div class="l-ring">
+                  <svg viewBox="0 0 240 240" fill="none">
+                    <circle cx="120" cy="120" r="112" stroke="rgba(234,255,0,.75)" stroke-width="2"/>
+                    <circle class="l-spin" cx="120" cy="120" r="102" stroke="rgba(234,255,0,.5)" stroke-width="1.5" stroke-dasharray="4 6"/>
+                    <circle class="l-arc" cx="120" cy="120" r="94" stroke="#EAFF00" stroke-width="6" stroke-linecap="round" transform="rotate(100 120 120)"/>
+                  </svg>
+                  <div>
+                    <div class="l-label" data-i18n="viz.calc">Расчёт KPI</div>
+                    <div class="l-ring-value">94.8%</div>
+                    <small data-i18n="viz.result">Результат</small>
+                  </div>
+                  <span class="l-auto">AUTO</span>
+                </div>
+                <div class="l-result">
+                  <div class="l-label" data-i18n="viz.result">Результат</div>
+                  <div class="l-result-card">
+                    <b>94.8%</b>
+                    <p data-i18n="viz.auto">Автоматический расчёт</p>
+                    <div class="l-delta"><svg class="l-icon"><use href="#i-trend"/></svg>+12.4%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="l-history">
+                <div class="l-history-head"><span class="l-label" data-i18n="viz.history">История</span><span data-i18n="viz.months">Май · Июн · Июл · Авг</span></div>
+                <div class="l-bars">
+                  <span style="height:45%;animation-delay:0s"></span><span style="height:62%;animation-delay:.1s"></span><span style="height:55%;animation-delay:.2s"></span>
+                  <span style="height:76%;animation-delay:.3s"></span><span style="height:68%;animation-delay:.4s"></span><span style="height:88%;animation-delay:.5s"></span>
+                  <span style="height:100%;animation-delay:.6s"></span>
+                </div>
+              </div>
+            </div>
+            <div class="l-steps"><span data-i18n="viz.employees">Сотрудники</span><i></i><span>KPI</span><i></i><span data-i18n="viz.history">История</span><i></i><span data-i18n="viz.result">Результат</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section" id="how">
+      <div class="l-wrap">
+        <div class="l-kicker">01 — Workflow</div>
+        <h2 data-i18n="how.title">Как это работает</h2>
+        <div class="l-cards">
+          <article class="l-card">
+            <div class="l-card-top"><span>01</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
+            <div class="l-mock l-mock-light" aria-hidden="true">
+              <div class="l-mock-head"><span data-i18n="viz.employees">Сотрудники</span><span class="l-plus">+</span></div>
+              <div class="l-row"><b>01</b><span></span><i></i></div>
+              <div class="l-row"><b>02</b><span></span><i></i></div>
+            </div>
+            <h3 data-i18n="s1.title">Добавьте сотрудников</h3>
+            <p data-i18n="s1.desc">Соберите команду в одном рабочем пространстве.</p>
+          </article>
+          <article class="l-card">
+            <div class="l-card-top"><span>02</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
+            <div class="l-mock l-mock-dark" aria-hidden="true">
+              <div class="l-mock-head"><span data-i18n="s2.mock">Настройка KPI</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
+              <div class="l-meter"><div><span data-i18n="s2.quality">Качество</span><b>40%</b></div><div class="l-meter-bar"><span style="width:40%"></span></div></div>
+              <div class="l-meter"><div><span data-i18n="s2.speed">Скорость</span><b>60%</b></div><div class="l-meter-bar"><span style="width:60%"></span></div></div>
+            </div>
+            <h3 data-i18n="s2.title">Настройте KPI</h3>
+            <p data-i18n="s2.desc">Задайте цели, веса и правила расчёта.</p>
+          </article>
+          <article class="l-card">
+            <div class="l-card-top"><span>03</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
+            <div class="l-mock l-mock-lime" aria-hidden="true">
+              <div class="l-mock-head"><span data-i18n="s3.mock">Итог расчёта</span><svg class="l-icon" style="color:var(--l-lime-ink)"><use href="#i-trend"/></svg></div>
+              <div class="l-kpi">
+                <svg class="l-donut" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(11,22,48,.12)" stroke-width="20"/>
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="#061331" stroke-width="20" stroke-dasharray="310 365" transform="rotate(-90 70 70)"/>
+                  <text x="70" y="80" text-anchor="middle" font-size="30" font-weight="700" fill="#061331">KPI</text>
+                </svg>
+                <div><strong data-i18n="s3.ready">Расчёт готов</strong><span data-i18n="s3.bonus">Премия рассчитана</span></div>
+              </div>
+            </div>
+            <h3 data-i18n="s3.title">Рассчитайте результат</h3>
+            <p data-i18n="s3.desc">Получите прозрачный итог и премию.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section" id="features">
+      <div class="l-wrap">
+        <div class="l-kicker">02 — Capabilities</div>
+        <h2 data-i18n="nav.features">Возможности</h2>
+        <div class="l-cards">
+          <article class="l-card l-card-feature">
+            <div class="l-feature-icon"><svg class="l-icon"><use href="#i-gauge"/></svg></div>
+            <h3 data-i18n="f1.title">Расчёт KPI</h3>
+            <p data-i18n="f1.desc">Точные показатели и прозрачная формула результата для каждого сотрудника.</p>
+          </article>
+          <article class="l-card l-card-feature">
+            <div class="l-feature-icon"><svg class="l-icon"><use href="#i-file"/></svg></div>
+            <h3 data-i18n="f2.title">Импорт Excel / CSV</h3>
+            <p data-i18n="f2.desc">Загружайте цели и результаты без ручного переноса данных.</p>
+          </article>
+          <article class="l-card l-card-feature">
+            <div class="l-feature-icon"><svg class="l-icon"><use href="#i-shield"/></svg></div>
+            <h3 data-i18n="f3.title">Роли и права доступа</h3>
+            <p data-i18n="f3.desc">Безопасное управление данными для сотрудников, администраторов и руководителей.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-section" id="pricing">
+      <div class="l-wrap">
+        <div class="l-kicker">03 — Pricing</div>
+        <h2 data-i18n="nav.pricing">Цены</h2>
+        <div class="l-pricing">
+          <p data-i18n="pricing.text">Стоимость зависит от размера команды и набора модулей. Войдите, чтобы попробовать систему, — условия подберём индивидуально.</p>
+          <button type="button" class="l-btn" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="l-footer">
+    <div class="l-wrap"><span>© AVO KPI</span><span data-i18n="footer">Эффективность, понятная каждому.</span></div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var I18N = {
+    ru: {
+      "nav.features": "Возможности", "nav.how": "Как это работает", "nav.pricing": "Цены", "nav.login": "Войти",
+      "theme.light": "Светлая тема", "theme.dark": "Тёмная тема", "theme.system": "Как в системе",
+      "hero.title": "Система расчёта и&nbsp;управления <em>KPI</em>",
+      "hero.lead": "Прозрачно измеряйте результат команды, автоматизируйте расчёты и принимайте решения на основе данных.",
+      "hero.cta": "Рассчитать KPI", "hero.check1": "До 120% по показателю", "hero.check3": "Роли и права",
+      "viz.kicker": "AVO KPI / Моушн-визуал", "viz.sub": "Каждый этап расчёта виден и понятен.", "viz.flow": "Поток данных",
+      "viz.employees": "Сотрудники", "viz.result": "Результат", "viz.calc": "Расчёт KPI", "viz.auto": "Автоматический расчёт",
+      "viz.data": "Данные · Результат", "viz.history": "История", "viz.months": "Май · Июн · Июл · Авг",
+      "viz.pause": "Остановить анимацию", "viz.play": "Запустить анимацию",
+      "how.title": "Как это работает",
+      "s1.title": "Добавьте сотрудников", "s1.desc": "Соберите команду в одном рабочем пространстве.",
+      "s2.title": "Настройте KPI", "s2.desc": "Задайте цели, веса и правила расчёта.", "s2.mock": "Настройка KPI", "s2.quality": "Качество", "s2.speed": "Скорость",
+      "s3.title": "Рассчитайте результат", "s3.desc": "Получите прозрачный итог и премию.", "s3.mock": "Итог расчёта", "s3.ready": "Расчёт готов", "s3.bonus": "Премия рассчитана",
+      "f1.title": "Расчёт KPI", "f1.desc": "Точные показатели и прозрачная формула результата для каждого сотрудника.",
+      "f2.title": "Импорт Excel / CSV", "f2.desc": "Загружайте цели и результаты без ручного переноса данных.",
+      "f3.title": "Роли и права доступа", "f3.desc": "Безопасное управление данными для сотрудников, администраторов и руководителей.",
+      "pricing.text": "Стоимость зависит от размера команды и набора модулей. Войдите, чтобы попробовать систему, — условия подберём индивидуально.",
+      "footer": "Эффективность, понятная каждому.",
+    },
+    uz: {
+      "nav.features": "Imkoniyatlar", "nav.how": "Qanday ishlaydi", "nav.pricing": "Narxlar", "nav.login": "Kirish",
+      "theme.light": "Yorug‘ mavzu", "theme.dark": "Qorong‘i mavzu", "theme.system": "Tizimdagidek",
+      "hero.title": "<em>KPI</em> hisoblash va boshqaruv tizimi",
+      "hero.lead": "Jamoa natijasini shaffof o‘lchang, hisob-kitoblarni avtomatlashtiring va ma’lumotlarga asoslangan qarorlar qabul qiling.",
+      "hero.cta": "KPI hisoblash", "hero.check1": "Ko‘rsatkich bo‘yicha 120% gacha", "hero.check3": "Rollar va huquqlar",
+      "viz.kicker": "AVO KPI / Motion vizual", "viz.sub": "Hisobning har bir bosqichi ko‘rinadi va tushunarli.", "viz.flow": "Ma’lumotlar oqimi",
+      "viz.employees": "Xodimlar", "viz.result": "Natija", "viz.calc": "KPI hisobi", "viz.auto": "Avtomatik hisob",
+      "viz.data": "Ma’lumot · Natija", "viz.history": "Tarix", "viz.months": "May · Iyun · Iyul · Avg",
+      "viz.pause": "Animatsiyani to‘xtatish", "viz.play": "Animatsiyani yoqish",
+      "how.title": "Bu qanday ishlaydi",
+      "s1.title": "Xodimlarni qo‘shing", "s1.desc": "Jamoani bitta ish maydonida jamlang.",
+      "s2.title": "KPI ni sozlang", "s2.desc": "Maqsadlar, vaznlar va hisob qoidalarini belgilang.", "s2.mock": "KPI sozlamasi", "s2.quality": "Sifat", "s2.speed": "Tezlik",
+      "s3.title": "Natijani hisoblang", "s3.desc": "Shaffof yakun va mukofotni oling.", "s3.mock": "Hisob yakuni", "s3.ready": "Hisob tayyor", "s3.bonus": "Mukofot hisoblandi",
+      "f1.title": "KPI hisobi", "f1.desc": "Har bir xodim uchun aniq ko‘rsatkichlar va shaffof natija formulasi.",
+      "f2.title": "Excel / CSV import", "f2.desc": "Maqsad va natijalarni qo‘lda ko‘chirmasdan yuklang.",
+      "f3.title": "Rollar va kirish huquqlari", "f3.desc": "Xodimlar, administratorlar va rahbarlar uchun xavfsiz ma’lumotlar boshqaruvi.",
+      "pricing.text": "Narx jamoa hajmi va modullar to‘plamiga bog‘liq. Tizimni sinab ko‘rish uchun kiring — shartlarni alohida kelishamiz.",
+      "footer": "Har kim tushunadigan samaradorlik.",
+    },
+    en: {
+      "nav.features": "Features", "nav.how": "How it works", "nav.pricing": "Pricing", "nav.login": "Log in",
+      "theme.light": "Light theme", "theme.dark": "Dark theme", "theme.system": "System theme",
+      "hero.title": "<em>KPI</em> calculation and management system",
+      "hero.lead": "Measure team performance transparently, automate calculations and make data-driven decisions.",
+      "hero.cta": "Calculate KPI", "hero.check1": "Up to 120% per metric", "hero.check3": "Roles & access",
+      "viz.kicker": "AVO KPI / Motion visual", "viz.sub": "Every step of the calculation is visible and clear.", "viz.flow": "Data flow",
+      "viz.employees": "Employees", "viz.result": "Result", "viz.calc": "KPI calculation", "viz.auto": "Automatic calculation",
+      "viz.data": "Data · Result", "viz.history": "History", "viz.months": "May · Jun · Jul · Aug",
+      "viz.pause": "Pause animation", "viz.play": "Play animation",
+      "how.title": "How it works",
+      "s1.title": "Add employees", "s1.desc": "Bring your whole team into one workspace.",
+      "s2.title": "Configure KPI", "s2.desc": "Set goals, weights and calculation rules.", "s2.mock": "KPI setup", "s2.quality": "Quality", "s2.speed": "Speed",
+      "s3.title": "Calculate the result", "s3.desc": "Get a transparent total and bonus.", "s3.mock": "Calculation total", "s3.ready": "Calculation ready", "s3.bonus": "Bonus calculated",
+      "f1.title": "KPI calculation", "f1.desc": "Accurate metrics and a transparent result formula for every employee.",
+      "f2.title": "Excel / CSV import", "f2.desc": "Upload goals and results without manual data entry.",
+      "f3.title": "Roles & access rights", "f3.desc": "Secure data management for employees, admins and managers.",
+      "pricing.text": "Pricing depends on team size and the set of modules. Log in to try the system — we will agree on terms individually.",
+      "footer": "Performance everyone understands.",
+    },
+  };
+
+  var root = document.documentElement;
+  var boot = window.KpiBoot;
+  var landing = document.getElementById("landing");
+  var vizToggle = document.getElementById("viz-toggle");
+  var paused = false;
+
+  function setLang(lang) {
+    var dict = I18N[lang] || I18N.ru;
+    root.setAttribute("lang", lang);
+    landing.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = dict[el.getAttribute("data-i18n")]; });
+    landing.querySelectorAll("[data-i18n-html]").forEach(function (el) { el.innerHTML = dict[el.getAttribute("data-i18n-html")]; });
+    landing.querySelectorAll("[data-i18n-label]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-label");
+      if (el === vizToggle) key = paused ? "viz.play" : "viz.pause";
+      el.setAttribute("aria-label", dict[key]);
+      el.setAttribute("title", dict[key]);
+    });
+    landing.querySelectorAll("[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang)); });
+    boot.store.set("avo-lang", lang);
+  }
+
+  function setTheme(theme) {
+    if (theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", theme);
+    root.setAttribute("data-theme-choice", theme);
+    landing.querySelectorAll("[data-theme-set]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-theme-set") === theme)); });
+    boot.store.set("avo-theme", theme);
+  }
+
+  landing.addEventListener("click", function (e) {
+    var t = e.target.closest("button, a");
+    if (!t) return;
+    if (t.hasAttribute("data-enter")) { boot.enterApp(); return; }
+    if (t.hasAttribute("data-lang")) { setLang(t.getAttribute("data-lang")); return; }
+    if (t.hasAttribute("data-theme-set")) { setTheme(t.getAttribute("data-theme-set")); return; }
+    if (t === vizToggle) {
+      paused = !paused;
+      landing.classList.toggle("l-viz-paused", paused);
+      vizToggle.setAttribute("aria-pressed", String(paused));
+      vizToggle.querySelector("use").setAttribute("href", paused ? "#i-play" : "#i-pause");
+      setLang(root.getAttribute("lang"));
+    }
+  });
+
+  setTheme(root.getAttribute("data-theme-choice") || "system");
+  setLang(root.getAttribute("lang") || "ru");
+})();
+</script>
+
+<div id="root"><div class="app-boot">Загрузка…</div></div>
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useCallback } = React;
@@ -1322,6 +1960,13 @@ function KpiApp() {
   const [showEmailLogin, setShowEmailLogin] = useState(() => {
     try { return localStorage.getItem("kpi-prefer-email-login") === "1"; } catch (e) { return false; }
   });
+  // Лендинг — статический HTML вне React. Пока гость его не прошёл, приложение ничего не рисует.
+  const [pastLanding, setPastLanding] = useState(() => document.documentElement.classList.contains("app-mode"));
+  useEffect(() => {
+    const onEnter = () => setPastLanding(true);
+    window.addEventListener("kpi:enter", onEnter);
+    return () => window.removeEventListener("kpi:enter", onEnter);
+  }, []);
   const chooseEmailLogin = () => {
     setShowEmailLogin(true);
     try { localStorage.setItem("kpi-prefer-email-login", "1"); } catch (e) {}
@@ -1613,6 +2258,7 @@ function KpiApp() {
       setShowEmailLogin(false);
       try { localStorage.removeItem("kpi-prefer-email-login"); } catch (e) {}
     };
+    if (!pastLanding) return null;
     if (!GUEST_MODE_ENABLED) return <AuthScreen />;
     return showEmailLogin
       ? <AuthScreen onBack={backToGuest} />
