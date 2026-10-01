@@ -76,9 +76,25 @@
         if (failed) return;
         window.Babel.transformScriptTags();
         // Excel нужен только для импорта/экспорта — грузим без блокировки интерфейса
-        addScript(XLSX_SCRIPT);
+        loadXlsx().catch(function () {}); // заранее, но без блокировки
       } : null, fail);
     });
+  }
+
+  // Библиотека Excel: грузится один раз; если сеть подвела — следующая попытка начнёт заново.
+  var xlsxPromise = null;
+  function loadXlsx() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (!xlsxPromise) {
+      xlsxPromise = new Promise(function (resolve, reject) {
+        var sc = document.createElement("script");
+        sc.src = XLSX_SCRIPT;
+        sc.onload = function () { window.XLSX ? resolve(window.XLSX) : reject(new Error("XLSX")); };
+        sc.onerror = function () { sc.remove(); xlsxPromise = null; reject(new Error("XLSX")); };
+        document.head.appendChild(sc);
+      });
+    }
+    return xlsxPromise;
   }
 
   function enterApp() {
@@ -100,7 +116,7 @@
     window.dispatchEvent(new Event("kpi:leave"));
   }
 
-  window.KpiBoot = { loadApp: loadApp, enterApp: enterApp, showLanding: showLanding, store: store };
+  window.KpiBoot = { loadApp: loadApp, enterApp: enterApp, showLanding: showLanding, loadXlsx: loadXlsx, store: store };
 
   if (inApp) {
     loadApp();
@@ -1302,7 +1318,25 @@ function readImportCell(cell) {
   }
   return cell.w !== undefined ? cell.w : cell.v;
 }
+// Excel-библиотека подгружается по требованию (см. KpiBoot.loadXlsx в начале файла).
+const XLSX_LOAD_ERROR = "Не удалось загрузить модуль Excel — проверьте интернет и попробуйте ещё раз.";
+async function ensureXlsx() {
+  try { await window.KpiBoot.loadXlsx(); return true; }
+  catch (e) { alert(XLSX_LOAD_ERROR); return false; }
+}
+// Скачивание .xlsx своим способом: XLSX.writeFile в некоторых браузерах теряет имя файла.
+function downloadWorkbook(wb, filename) {
+  const data = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
 async function parseWorkbook(file) {
+  await window.KpiBoot.loadXlsx().catch(() => { throw new Error(XLSX_LOAD_ERROR); });
   const isCsv = /\.csv$/i.test(file.name);
   let wb;
   if (isCsv) { wb = XLSX.read(await file.text(), { type: "string" }); }
@@ -1873,7 +1907,7 @@ function ImportIndicatorsPanel({ onSave, onClose }) {
       setRows(result.rows);
       setDepartment(result.guessedDepartment || "");
     } catch (e) {
-      setError("Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.");
+      setError(e && e.message === XLSX_LOAD_ERROR ? XLSX_LOAD_ERROR : "Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.");
     }
   };
 
@@ -2372,7 +2406,7 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
       if (result.rows.length === 0) { setError("Не нашёл ни одной строки с именем сотрудника в первой колонке."); return; }
       setParsed(result);
     } catch (e) {
-      setError("Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.");
+      setError(e && e.message === XLSX_LOAD_ERROR ? XLSX_LOAD_ERROR : "Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.");
     }
   };
 
@@ -2385,8 +2419,9 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
     setFileName("");
   };
 
-  const exportResults = () => {
+  const exportResults = async () => {
     if (!lastSummary || lastSummary.length === 0) return;
+    if (!(await ensureXlsx())) return;
     const indHeaders = activeIndicators(settings).flatMap((i) => [`${i.name}, %`, `${i.name}, оценка`]);
     const header = ["Сотрудник", ...indHeaders, "Часы", "Итоговый KPI, %", "Оценка", "Премия, сум", "Премия после налога (7,5%), сум"];
     const body = lastSummary.map((s) => {
@@ -2401,7 +2436,7 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
     ws["!cols"] = header.map(() => ({ wch: 16 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Результат импорта");
-    XLSX.writeFile(wb, `KPI_импорт_${summaryMonth}.xlsx`);
+    downloadWorkbook(wb, `KPI_импорт_${summaryMonth}.xlsx`);
   };
 
   return (
@@ -2765,7 +2800,8 @@ function KpiApp() {
 
   const handleMonthChange = (m) => setCardParams((p) => ({ ...p, month: m }));
 
-  const exportCard = () => {
+  const exportCard = async () => {
+    if (!(await ensureXlsx())) return;
     if (!draftResult || !cardParams) return;
     const emp = employees.find((e) => e.id === cardParams.employeeId);
     const meta = [["Сотрудник", emp?.name || "—"], ["Период", monthLabel(cardParams.month)], ["Часы", `${draftHours} / ${snapshotNormHours}`], ["Сумма 100% премии, сум", snapshotBase], []];
@@ -2776,10 +2812,11 @@ function KpiApp() {
     ws["!cols"] = [{ wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 9 }, { wch: 8 }, { wch: 9 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "KPI");
-    XLSX.writeFile(wb, `KPI_${(emp?.name || "sotrudnik").replace(/\s+/g, "_")}_${cardParams.month}.xlsx`);
+    downloadWorkbook(wb, `KPI_${(emp?.name || "sotrudnik").replace(/\s+/g, "_")}_${cardParams.month}.xlsx`);
   };
 
-  const exportAllHistory = () => {
+  const exportAllHistory = async () => {
+    if (!(await ensureXlsx())) return;
     const header = ["Сотрудник", "Период", "Итоговый KPI, %", "Оценка", "Премия, сум", "Премия после налога (7,5%), сум"];
     const body = Object.values(records).filter((r) => r.result).map((r) => {
       const name = employees.find((e) => e.id === r.employee_id)?.name || "—";
@@ -2789,7 +2826,7 @@ function KpiApp() {
     ws["!cols"] = [{ wch: 24 }, { wch: 16 }, { wch: 14 }, { wch: 10 }, { wch: 14 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "История KPI");
-    XLSX.writeFile(wb, "KPI_история.xlsx");
+    downloadWorkbook(wb, "KPI_история.xlsx");
   };
 
   const deleteRecord = async (recordId) => {
