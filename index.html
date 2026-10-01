@@ -91,7 +91,16 @@
     window.dispatchEvent(new Event("kpi:enter"));
   }
 
-  window.KpiBoot = { loadApp: loadApp, enterApp: enterApp, store: store };
+  // Обратно на лендинг (логотип в приложении, «На главную» на экране входа).
+  // Вход не сбрасывается: «Войти» на лендинге вернёт прямо в приложение.
+  function showLanding() {
+    store.set("kpi-past-landing", "0");
+    root.classList.remove("app-mode");
+    window.scrollTo(0, 0);
+    window.dispatchEvent(new Event("kpi:leave"));
+  }
+
+  window.KpiBoot = { loadApp: loadApp, enterApp: enterApp, showLanding: showLanding, store: store };
 
   if (inApp) {
     loadApp();
@@ -1375,6 +1384,9 @@ function AuthScreen({ onAuthed, onBack }) {
             ← Назад
           </button>
         )}
+        <button onClick={() => window.KpiBoot?.showLanding()} style={{ background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", width: "100%", textAlign: "center", marginTop: 10 }}>
+          ← На главную
+        </button>
       </Card>
     </div>
   );
@@ -2166,8 +2178,10 @@ function KpiApp() {
   const [pastLanding, setPastLanding] = useState(() => document.documentElement.classList.contains("app-mode"));
   useEffect(() => {
     const onEnter = () => setPastLanding(true);
+    const onLeave = () => setPastLanding(false);
     window.addEventListener("kpi:enter", onEnter);
-    return () => window.removeEventListener("kpi:enter", onEnter);
+    window.addEventListener("kpi:leave", onLeave);
+    return () => { window.removeEventListener("kpi:enter", onEnter); window.removeEventListener("kpi:leave", onLeave); };
   }, []);
   const chooseEmailLogin = () => {
     setShowEmailLogin(true);
@@ -2472,13 +2486,14 @@ function KpiApp() {
     <div style={{ minHeight: "100vh", width: "100%", background: BG, color: TEXT }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => window.KpiBoot?.showLanding()} title="На главную" aria-label="На главную"
+            style={{ display: "flex", alignItems: "center", gap: 12, background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", font: "inherit" }}>
             <BrandMark size={40} />
             <div>
               <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.03em", color: TEXT, lineHeight: 1.1 }}>unum<span style={{ color: MUTED, fontWeight: 500 }}>.kpi</span></div>
               <div style={{ fontSize: 13, color: MUTED }}>Расчёт премии по показателям</div>
             </div>
-          </div>
+          </button>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <ThemeSwitch />
             <div style={{ textAlign: "right" }}>
