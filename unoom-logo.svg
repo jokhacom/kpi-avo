@@ -1,0 +1,8 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 166'>
+<path d='M0 160L5 72C9 28 48 3 100 1C152 3 191 28 195 72L200 160Q100 167 0 160Z' fill='#0B1532'/>
+<path d='M28 38Q20 70 22 118Q22 141 42 142H158Q178 141 178 118Q180 70 172 38' fill='none' stroke='#EAFF00' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M163 24C150 33 128 40 104 41C80 42 50 41 43 55C37 68 50 78 70 76C110 72 140 55 163 24Z' fill='#0B1532' stroke='#fff' stroke-width='3.4' stroke-linejoin='round'/>
+<path d='M137 45C120 55 100 59 83 59C71 59 65 64 67 70C69 75 78 76 88 74C110 69 126 58 137 45Z' fill='#EAFF00'/>
+<g fill='none' stroke='#fff' stroke-width='3.2'><path d='M27.6 140V122A17.4 17.4 0 0 1 62.4 122V140'/><path d='M64.3 140V122A17.4 17.4 0 0 1 99.1 122V140'/><path d='M100.9 140V122A17.4 17.4 0 0 1 135.7 122V140'/><path d='M137.6 140V122A17.4 17.4 0 0 1 172.4 122V140'/></g>
+<g fill='#EAFF00' font-family='Arial Black,Arial,Helvetica,sans-serif' font-weight='900' font-size='22' text-anchor='middle'><text x='45' y='138.5'>N</text><text x='81.7' y='138.5'>O</text><text x='118.3' y='138.5'>O</text><text x='155' y='138.5'>M</text></g>
+</svg>

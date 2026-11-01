@@ -668,30 +668,47 @@
     // среди только выбранных/активных показателей. Если считается всего один
     // показатель с весом 20%, его вклад в итог — 20%, а не 100%. Веса НИКОГДА
     // не перераспределяются и не нормализуются под то, что сейчас выбрано.
+    //
+    // Считаются ДВА итога:
+    //  • overall    — KPI для буквенной оценки: показатель учитывается до 120%,
+    //                 перевыполнение одной цели компенсирует недовыполнение другой;
+    //  • payOverall — «денежный» KPI для премии: каждый показатель не выше 100%,
+    //                 перевыполнение НЕ добавляет денег и не перекрывает другие показатели.
     let weightedSum = 0;
+    let paySum = 0;
     const perIndicator = [];
     indicators.forEach((ind) => {
       if (ind.enabled === false) return; // выключенные показатели не участвуют в расчёте
       const actual = Number(facts[ind.id] ?? 0);
-      const percent = computeIndicatorPercent(ind, actual, formulaType); // уже в [0,100]
+      const percent = computeIndicatorPercent(ind, actual, formulaType); // в [0,120]
       const weight = Number(ind.weight) || 0;
-      const contribution = (percent * weight) / 100; // вклад этого показателя в итоговый KPI
+      const contribution = (percent * weight) / 100; // вклад в KPI для оценки
+      const payPercent = Math.min(percent, 100); // для денег показатель не выше 100%
+      const payContribution = (payPercent * weight) / 100; // вклад в денежный KPI
       weightedSum += contribution;
-      perIndicator.push({ id: ind.id, name: ind.name, min: ind.min, norm: ind.norm, weight: ind.weight, actual, percent, contribution });
+      paySum += payContribution;
+      perIndicator.push({ id: ind.id, name: ind.name, min: ind.min, norm: ind.norm, weight: ind.weight, actual, percent, contribution, payPercent, payContribution });
     });
-    const overall = weightedSum; // сумма вкладов = итоговый KPI (из исходных весов, без перенормировки)
-    return { perIndicator, overall };
+    const overall = weightedSum; // KPI для оценки (из исходных весов, без перенормировки)
+    const payOverall = paySum; // KPI для премии
+    return { perIndicator, overall, payOverall };
   }
 
-  // Премия: сначала % выполнения KPI (уже ограничен до 100% на предыдущем шаге),
-  // затем коэффициент по отработанным часам, и итог не может превысить сумму 100%.
-  function computePremium(overallPercent, hoursWorked, normHours, baseAmount) {
+  // Премия = база × KPI для премии × коэффициент по отработанным часам.
+  // Два режима (переключает только Super Admin в настройках/карточке):
+  //  • allowOverachievement = false (по умолчанию) — передаётся payOverall из
+  //    computeOverall (каждый показатель не выше 100%), итог не больше 100% базы;
+  //  • allowOverachievement = true — передаётся overall (показатели до 120%),
+  //    перевыполнение увеличивает премию, потолок 100% базы не применяется.
+  function computePremium(kpiPercent, hoursWorked, normHours, baseAmount, allowOverachievement) {
     const hours = Number(hoursWorked) || 0;
     const norm = Number(normHours) || 0;
     const hoursCoef = norm > 0 ? Math.min(1, hours / norm) : 1;
-    const percent = clamp01to100(overallPercent);
-    const raw = (percent / 100) * Number(baseAmount || 0) * hoursCoef;
-    return Math.max(0, Math.min(raw, Number(baseAmount || 0)));
+    const base = Number(baseAmount || 0);
+    const v = Number(kpiPercent) || 0;
+    const percent = allowOverachievement ? Math.max(0, Math.min(INDICATOR_PERCENT_CAP, v)) : clamp01to100(v);
+    const raw = (percent / 100) * base * hoursCoef;
+    return allowOverachievement ? Math.max(0, raw) : Math.max(0, Math.min(raw, base));
   }
 
   function gradeFor(percent, grades) {
@@ -706,6 +723,7 @@
     computeOverall,
     computePremium,
     gradeFor,
+    INDICATOR_PERCENT_CAP,
   };
 })(typeof window !== "undefined" ? window : globalThis);
 
@@ -1481,6 +1499,18 @@ const NUM_FONT = "'SF Mono', ui-monospace, Menlo, monospace";
 // Тот же выбор, что и на лендинге (KpiBoot.setLang). T("русский текст") возвращает перевод.
 let APP_LANG = ["ru", "uz", "en"].includes(document.documentElement.getAttribute("lang")) ? document.documentElement.getAttribute("lang") : "ru";
 const APP_DICT = {"не удалось прочитать таблицу": {"uz": "jadvalni o‘qib bo‘lmadi", "en": "couldn’t read the table"}, "Название показателя / KPI": {"uz": "Ko‘rsatkich nomi / KPI", "en": "Metric name / KPI"}, "сум": {"uz": "so‘m", "en": "UZS"}, "ч": {"uz": "soat", "en": "h"}, "Сотрудники": {"uz": "Xodimlar", "en": "Employees"}, "Импорт из Excel": {"uz": "Excel’dan import", "en": "Import from Excel"}, "Настройки KPI": {"uz": "KPI sozlamalari", "en": "KPI settings"}, "Загрузить цели": {"uz": "Maqsadlarni yuklash", "en": "Upload goals"}, "История": {"uz": "Tarix", "en": "History"}, "Пользователи": {"uz": "Foydalanuvchilar", "en": "Users"}, "Пользователь": {"uz": "Foydalanuvchi", "en": "User"}, "Светлая тема": {"uz": "Yorug‘ mavzu", "en": "Light theme"}, "Тёмная тема": {"uz": "Qorong‘i mavzu", "en": "Dark theme"}, "Как в системе": {"uz": "Tizimdagidek", "en": "System theme"}, "Тема": {"uz": "Mavzu", "en": "Theme"}, "Язык": {"uz": "Til", "en": "Language"}, "Динамика KPI": {"uz": "KPI dinamikasi", "en": "KPI trend"}, "Пульс команды · {m}": {"uz": "Jamoa pulsi · {m}", "en": "Team pulse · {m}"}, "Средний KPI": {"uz": "O‘rtacha KPI", "en": "Average KPI"}, "рассчитано: {a} из {b}": {"uz": "hisoblangan: {a} / {b}", "en": "calculated: {a} of {b}"}, "Лучший результат": {"uz": "Eng yaxshi natija", "en": "Best result"}, "Нужна поддержка": {"uz": "Yordam kerak", "en": "Needs support"}, "KPI ниже 50%": {"uz": "KPI 50% dan past", "en": "KPI below 50%"}, "все выше 50%": {"uz": "hammasi 50% dan yuqori", "en": "all above 50%"}, "Ещё не рассчитаны за этот месяц: {n}.": {"uz": "Bu oy uchun hali hisoblanmagan: {n}.", "en": "Not calculated for this month yet: {n}."}, "факт": {"uz": "fakt", "en": "actual"}, "Вклад {c} из {w} возможных": {"uz": "Hissa: {c} / {w}", "en": "Contribution {c} of {w} possible"}, "вклад": {"uz": "hissa", "en": "contribution"}, "из": {"uz": "/", "en": "of"}, " · перевыполнение": {"uz": " · rejadan oshirib bajarildi", "en": " · overachieved"}, "Это высшая оценка — отличный результат. Держите уровень и в следующем месяце.": {"uz": "Bu eng yuqori baho — ajoyib natija. Keyingi oyda ham shu darajani saqlang.", "en": "That’s the top grade — great result. Keep it up next month."}, "До оценки {g} не хватает {gap} п.п.": {"uz": "{g} bahogacha {gap} p.p. yetmayapti.", "en": "{gap} pts short of grade {g}."}, "Быстрее всего — через «{name}» (вес {w}%):": {"uz": "Eng tezi — «{name}» orqali (vazn {w}%):", "en": "Fastest way — “{name}” (weight {w}%):"}, "достаточно поднять выполнение с {a}% до {b}%.": {"uz": "bajarilishni {a}% dan {b}% gacha oshirish kifoya.", "en": "raise completion from {a}% to {b}%."}, "даже максимум по нему даст +{r} п.п., нужны улучшения и по другим показателям.": {"uz": "undagi maksimum ham +{r} p.p. beradi, boshqa ko‘rsatkichlarni ham yaxshilash kerak.", "en": "even its maximum gives +{r} pts, other metrics need to improve too."}, "Не удалось войти автоматически: ": {"uz": "Avtomatik kirib bo‘lmadi: ", "en": "Automatic sign-in failed: "}, "Unoom · KPI сотрудников": {"uz": "Unoom · Xodimlar KPI", "en": "Unoom · Employee KPI"}, "Открываем демо-доступ…": {"uz": "Demo kirish ochilmoqda…", "en": "Opening demo access…"}, "У меня уже есть аккаунт — войти по email": {"uz": "Menda akkaunt bor — email orqali kirish", "en": "I already have an account — sign in by email"}, "Готово. Если в проекте включено подтверждение почты — проверьте письмо, затем войдите.": {"uz": "Tayyor. Agar pochtani tasdiqlash yoqilgan bo‘lsa — xatni tekshiring, so‘ng kiring.", "en": "Done. If email confirmation is on, check your inbox, then sign in."}, "Ошибка входа": {"uz": "Kirish xatosi", "en": "Sign-in error"}, "Вход": {"uz": "Kirish", "en": "Sign in"}, "Регистрация": {"uz": "Ro‘yxatdan o‘tish", "en": "Sign up"}, "Пароль": {"uz": "Parol", "en": "Password"}, "Войти": {"uz": "Kirish", "en": "Log in"}, "Зарегистрироваться": {"uz": "Ro‘yxatdan o‘tish", "en": "Sign up"}, "Нет аккаунта? Зарегистрироваться": {"uz": "Akkaunt yo‘qmi? Ro‘yxatdan o‘ting", "en": "No account? Sign up"}, "Уже есть аккаунт? Войти": {"uz": "Akkaunt bormi? Kiring", "en": "Have an account? Log in"}, "← Назад": {"uz": "← Orqaga", "en": "← Back"}, "Назад": {"uz": "Orqaga", "en": "Back"}, "← На главную": {"uz": "← Bosh sahifaga", "en": "← Home"}, "На главную": {"uz": "Bosh sahifaga", "en": "Home"}, "ФИО нового сотрудника": {"uz": "Yangi xodimning F.I.Sh.", "en": "New employee’s full name"}, "Добавить": {"uz": "Qo‘shish", "en": "Add"}, "Расчётов ещё нет": {"uz": "Hali hisob-kitob yo‘q", "en": "No calculations yet"}, "Открыть карточку KPI": {"uz": "KPI kartasini ochish", "en": "Open KPI card"}, "Точно?": {"uz": "Aniqmi?", "en": "Sure?"}, "Сотрудников пока нет — добавьте первого выше.": {"uz": "Hozircha xodimlar yo‘q — birinchisini yuqorida qo‘shing.", "en": "No employees yet — add the first one above."}, "Налог с премии": {"uz": "Mukofotdan soliq", "en": "Bonus tax"}, "Уменьшить налог": {"uz": "Soliqni kamaytirish", "en": "Decrease tax"}, "Увеличить налог": {"uz": "Soliqni oshirish", "en": "Increase tax"}, "Не нашёл ни одной строки с показателем в файле.": {"uz": "Faylda birorta ko‘rsatkich qatori topilmadi.", "en": "No metric rows found in the file."}, "Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.": {"uz": "Faylni o‘qib bo‘lmadi. Bu .xlsx, .xls yoki .csv ekanini tekshiring.", "en": "Couldn’t read the file. Make sure it’s .xlsx, .xls or .csv."}, "Не удалось загрузить модуль Excel — проверьте интернет и попробуйте ещё раз.": {"uz": "Excel modulini yuklab bo‘lmadi — internetni tekshirib, qayta urinib ko‘ring.", "en": "Couldn’t load the Excel module — check your internet and try again."}, "Импорт показателей из Excel/CSV": {"uz": "Ko‘rsatkichlarni Excel/CSV’dan import qilish", "en": "Import metrics from Excel/CSV"}, "Закрыть": {"uz": "Yopish", "en": "Close"}, "Файл должен содержать колонки: название показателя (KPI), Min point, Normal point — и, по желанию, «Вес показателя», «Подразделение», «Должность».": {"uz": "Faylda ustunlar bo‘lishi kerak: ko‘rsatkich nomi (KPI), Min point, Normal point — va ixtiyoriy «Vazn», «Bo‘lim», «Lavozim».", "en": "The file must have columns: metric name (KPI), Min point, Normal point — and optionally “Weight”, “Department”, “Position”."}, "Загрузить файл": {"uz": "Faylni yuklash", "en": "Upload file"}, "В файле не нашлись обязательные колонки: {cols}. Переименуйте заголовки в файле (например «KPI», «Min», «Normal») и загрузите заново.": {"uz": "Faylda majburiy ustunlar topilmadi: {cols}. Sarlavhalarni o‘zgartiring (masalan «KPI», «Min», «Normal») va qayta yuklang.", "en": "Required columns not found: {cols}. Rename the headers (e.g. “KPI”, “Min”, “Normal”) and upload again."}, "Предполагаемое подразделение:": {"uz": "Taxminiy bo‘lim:", "en": "Likely department:"}, "Подразделение не определено": {"uz": "Bo‘lim aniqlanmadi", "en": "Department not detected"}, "Изменить подразделение": {"uz": "Bo‘limni o‘zgartirish", "en": "Change department"}, "Своё название подразделения": {"uz": "Bo‘limning o‘z nomi", "en": "Custom department name"}, "Готово": {"uz": "Tayyor", "en": "Done"}, "Найдено показателей: {n}. Проверьте и при необходимости исправьте перед сохранением.": {"uz": "Topilgan ko‘rsatkichlar: {n}. Saqlashdan oldin tekshirib, kerak bo‘lsa tuzating.", "en": "Metrics found: {n}. Check and fix them before saving if needed."}, "Показатель": {"uz": "Ko‘rsatkich", "en": "Metric"}, "Должность": {"uz": "Lavozim", "en": "Position"}, "Вес": {"uz": "Vazn", "en": "Weight"}, "Сохранить KPI": {"uz": "KPI ni saqlash", "en": "Save KPI"}, "Загрузить другой файл": {"uz": "Boshqa fayl yuklash", "en": "Upload another file"}, "Загрузите файл с целями (KPI) — система сама распознает показатели, минимум, норматив и вес, и добавит их в «Настройки KPI» без ручного ввода. Проверить и поправить результат можно прямо здесь, перед сохранением.": {"uz": "Maqsadlar (KPI) faylini yuklang — tizim ko‘rsatkichlar, minimum, norma va vaznni o‘zi taniydi va ularni «KPI sozlamalari»ga qo‘lda kiritmasdan qo‘shadi. Natijani saqlashdan oldin shu yerda tekshirib, tuzatish mumkin.", "en": "Upload a goals (KPI) file — the system recognises metrics, minimum, target and weight and adds them to “KPI settings” with no manual entry. You can check and fix the result right here before saving."}, "Добавлено показателей: {n}. Проверить и настроить их можно на вкладке «Настройки KPI».": {"uz": "Qo‘shilgan ko‘rsatkichlar: {n}. Ularni «KPI sozlamalari» bo‘limida tekshirish mumkin.", "en": "Metrics added: {n}. You can review them in “KPI settings”."}, "Новый показатель": {"uz": "Yangi ko‘rsatkich", "en": "New metric"}, "Мои настройки": {"uz": "Mening sozlamalarim", "en": "My settings"}, "По умолчанию (для новых)": {"uz": "Standart (yangilar uchun)", "en": "Default (for new users)"}, "Вы редактируете общий шаблон по умолчанию — его получают только НОВЫЕ пользователи при первом входе. На уже существующих пользователей (включая вас) это не влияет.": {"uz": "Siz umumiy standart shablonni tahrirlayapsiz — uni faqat YANGI foydalanuvchilar birinchi kirishda oladi. Mavjud foydalanuvchilarga (shu jumladan sizga) ta’sir qilmaydi.", "en": "You’re editing the shared default template — only NEW users get it on first sign-in. Existing users (including you) are not affected."}, "Это ваши личные настройки KPI — изменения здесь видите только вы, они не затрагивают других пользователей.": {"uz": "Bu sizning shaxsiy KPI sozlamalaringiz — o‘zgarishlarni faqat siz ko‘rasiz, ular boshqa foydalanuvchilarga ta’sir qilmaydi.", "en": "These are your personal KPI settings — only you see these changes; other users are not affected."}, "Показатели": {"uz": "Ko‘rsatkichlar", "en": "Metrics"}, "Сумма весов: {n}% · цель:": {"uz": "Vaznlar yig‘indisi: {n}% · maqsad:", "en": "Weights total: {n}% · target:"}, "Название": {"uz": "Nomi", "en": "Name"}, "Вес, %": {"uz": "Vazn, %", "en": "Weight, %"}, "Минимум": {"uz": "Minimum", "en": "Minimum"}, "Норматив": {"uz": "Norma", "en": "Target"}, "Описание (необязательно)": {"uz": "Tavsif (ixtiyoriy)", "en": "Description (optional)"}, "Направление:": {"uz": "Yo‘nalish:", "en": "Direction:"}, "Больше — лучше": {"uz": "Ko‘proq — yaxshiroq", "en": "Higher is better"}, "Меньше — лучше": {"uz": "Kamroq — yaxshiroq", "en": "Lower is better"}, "Включён (учитывается в расчёте)": {"uz": "Yoqilgan (hisobga olinadi)", "en": "Enabled (counted)"}, "Порядок:": {"uz": "Tartib:", "en": "Order:"}, "Направление задаётся явно кнопками выше и не зависит от названия показателя — можно переименовать показатель в любой момент, расчёт не изменится. Выключенные показатели не участвуют в расчёте KPI.": {"uz": "Yo‘nalish yuqoridagi tugmalar bilan belgilanadi va ko‘rsatkich nomiga bog‘liq emas — nomni istalgan vaqtda o‘zgartirish mumkin, hisob o‘zgarmaydi. O‘chirilgan ko‘rsatkichlar KPI hisobida qatnashmaydi.", "en": "Direction is set with the buttons above and doesn’t depend on the metric name — rename it any time, the calculation won’t change. Disabled metrics are not counted."}, "Сумма 100% премии, сум": {"uz": "100% mukofot summasi, so‘m", "en": "Bonus at 100%, UZS"}, "Норма часов в месяц": {"uz": "Oylik soat normasi", "en": "Monthly hours norm"}, "Формула расчёта": {"uz": "Hisob formulasi", "en": "Formula"}, "Линейная": {"uz": "Chiziqli", "en": "Linear"}, "Ступенчатая": {"uz": "Pog‘onali", "en": "Stepped"}, "Буквенные оценки": {"uz": "Harfli baholar", "en": "Letter grades"}, "Оценка": {"uz": "Baho", "en": "Grade"}, "Выполнение от, %": {"uz": "Bajarilish, % dan", "en": "Completion from, %"}, "Изменения сохраняются автоматически и сразу видны всем пользователям.": {"uz": "O‘zgarishlar avtomatik saqlanadi.", "en": "Changes are saved automatically."}, "Этот email уже зарегистрирован — измените роль ему прямо в списке ниже.": {"uz": "Bu email allaqachon ro‘yxatdan o‘tgan — rolini quyidagi ro‘yxatda o‘zgartiring.", "en": "This email is already registered — change its role in the list below."}, "Не удалось добавить — попробуйте ещё раз.": {"uz": "Qo‘shib bo‘lmadi — qayta urinib ko‘ring.", "en": "Couldn’t add — please try again."}, "Пользователи и права": {"uz": "Foydalanuvchilar va huquqlar", "en": "Users and permissions"}, "Добавить пользователя": {"uz": "Foydalanuvchi qo‘shish", "en": "Add user"}, "Роль присвоится автоматически, как только этот человек сам зайдёт на сайт и зарегистрируется этим же email. Пароль он придумывает сам — вы его не задаёте.": {"uz": "Rol bu odam saytga kirib, shu email bilan ro‘yxatdan o‘tishi bilan avtomatik beriladi. Parolni u o‘zi o‘ylab topadi — siz belgilamaysiz.", "en": "The role is assigned automatically once this person signs up with the same email. They choose their own password — you don’t set it."}, "Ожидают регистрации": {"uz": "Ro‘yxatdan o‘tishni kutmoqda", "en": "Waiting for sign-up"}, "ещё не зарегистрирован": {"uz": "hali ro‘yxatdan o‘tmagan", "en": "not registered yet"}, "Гость": {"uz": "Mehmon", "en": "Guest"}, "(вы)": {"uz": "(siz)", "en": "(you)"}, "Единственный Super Admin": {"uz": "Yagona Super Admin", "en": "The only Super Admin"}, "Управление сотрудниками": {"uz": "Xodimlarni boshqarish", "en": "Manage employees"}, "Видеть чужие файлы/расчёты": {"uz": "Boshqalarning fayl/hisoblarini ko‘rish", "en": "See others’ files/calculations"}, "Точно удалить?": {"uz": "Aniq o‘chirilsinmi?", "en": "Delete for sure?"}, "Удалить": {"uz": "O‘chirish", "en": "Delete"}, "Пока нет других зарегистрированных пользователей.": {"uz": "Hozircha boshqa ro‘yxatdan o‘tgan foydalanuvchilar yo‘q.", "en": "No other registered users yet."}, "Права проверяются на сервере (Supabase RLS), а не только в интерфейсе — их нельзя обойти через инструменты разработчика браузера.": {"uz": "Huquqlar serverda (Supabase RLS) tekshiriladi, faqat interfeysda emas — ularni brauzer vositalari orqali chetlab o‘tib bo‘lmaydi.", "en": "Permissions are checked on the server (Supabase RLS), not just in the interface — they can’t be bypassed with browser dev tools."}, "Показатели KPI ещё не настроены.": {"uz": "KPI ko‘rsatkichlari hali sozlanmagan.", "en": "KPI metrics aren’t set up yet."}, "Факт": {"uz": "Fakt", "en": "Actual"}, "Отработано часов (норма — {n})": {"uz": "Ishlangan soat (norma — {n})", "en": "Hours worked (norm — {n})"}, "Рассчитать KPI": {"uz": "KPI ni hisoblash", "en": "Calculate KPI"}, "Общий KPI": {"uz": "Umumiy KPI", "en": "Overall KPI"}, "Рассчитано: {d}": {"uz": "Hisoblangan: {d}", "en": "Calculated: {d}"}, "Премия (макс. {n})": {"uz": "Mukofot (maks. {n})", "en": "Bonus (max {n})"}, "После налога ({p}%): {v}": {"uz": "Soliqdan keyin ({p}%): {v}", "en": "After tax ({p}%): {v}"}, "Экспорт в Excel": {"uz": "Excel’ga eksport", "en": "Export to Excel"}, "Точно удалить расчёт?": {"uz": "Hisob aniq o‘chirilsinmi?", "en": "Delete this calculation?"}, "Удалить расчёт": {"uz": "Hisobni o‘chirish", "en": "Delete calculation"}, "Из чего сложился KPI": {"uz": "KPI nimalardan iborat", "en": "What makes up the KPI"}, "Как улучшить": {"uz": "Qanday yaxshilash mumkin", "en": "How to improve"}, "Не нашёл ни одной строки с именем сотрудника в первой колонке.": {"uz": "Birinchi ustunda xodim ismi bo‘lgan qator topilmadi.", "en": "No rows with an employee name found in the first column."}, "Сотрудник": {"uz": "Xodim", "en": "Employee"}, "Часы": {"uz": "Soatlar", "en": "Hours"}, "Итоговый KPI, %": {"uz": "Yakuniy KPI, %", "en": "Overall KPI, %"}, "Премия, сум": {"uz": "Mukofot, so‘m", "en": "Bonus, UZS"}, "Налог, %": {"uz": "Soliq, %", "en": "Tax, %"}, "Премия после налога, сум": {"uz": "Soliqdan keyingi mukofot, so‘m", "en": "Bonus after tax, UZS"}, "Период": {"uz": "Davr", "en": "Period"}, "Результат импорта": {"uz": "Import natijasi", "en": "Import result"}, "оценка": {"uz": "baho", "en": "grade"}, "Первая колонка — ФИО сотрудника. Дальше — колонки показателей (названия должны совпадать с «Настройками KPI») и, по желанию, колонка «Часы» с отработанными часами за месяц — если её нет, считается полная норма. Минимум, норматив, вес, сумма премии и норма часов всегда берутся из настроек, а не из файла.": {"uz": "Birinchi ustun — xodimning F.I.Sh. Keyin — ko‘rsatkich ustunlari (nomlari «KPI sozlamalari» bilan mos bo‘lishi kerak) va ixtiyoriy «Часы» (soatlar) ustuni — u bo‘lmasa, to‘liq norma olinadi. Minimum, norma, vazn, mukofot summasi va soat normasi doim sozlamalardan olinadi.", "en": "First column — employee’s full name. Then metric columns (names must match “KPI settings”) and optionally an “Часы” (hours) column — without it the full norm is used. Minimum, target, weight, bonus and hours norm always come from settings, not from the file."}, "Месяц": {"uz": "Oy", "en": "Month"}, "Ошибка: в файле не найдены столбцы для показателей — {cols}. Импорт заблокирован, пока не найдены все показатели.": {"uz": "Xato: faylda ko‘rsatkichlar uchun ustunlar topilmadi — {cols}. Barcha ko‘rsatkichlar topilmaguncha import bloklangan.", "en": "Error: no columns found for metrics — {cols}. Import is blocked until all metrics are found."}, "Колонка «Часы» не найдена — для всех строк будет использована полная норма ({n} ч).": {"uz": "«Часы» ustuni topilmadi — barcha qatorlar uchun to‘liq norma ({n} soat) olinadi.", "en": "No “Часы” (hours) column — the full norm ({n} h) will be used for all rows."}, "Найдено сотрудников: {n} · период: {m}": {"uz": "Topilgan xodimlar: {n} · davr: {m}", "en": "Employees found: {n} · period: {m}"}, "Лишние колонки: {cols}. Игнорируются.": {"uz": "Ortiqcha ustunlar: {cols}. E’tiborga olinmaydi.", "en": "Extra columns: {cols}. Ignored."}, "часы": {"uz": "soatlar", "en": "hours"}, "Результат · {m}": {"uz": "Natija · {m}", "en": "Result · {m}"}, "Скачать результат в Excel": {"uz": "Natijani Excel’da yuklab olish", "en": "Download result as Excel"}, "после налога {p}%": {"uz": "soliqdan keyin {p}%", "en": "after {p}% tax"}, "Не удалось удалить «{name}» — попробуйте ещё раз.": {"uz": "«{name}»ni o‘chirib bo‘lmadi — qayta urinib ko‘ring.", "en": "Couldn’t delete “{name}” — please try again."}, "вы": {"uz": "siz", "en": "you"}, "гость": {"uz": "mehmon", "en": "guest"}, "неизвестно": {"uz": "noma’lum", "en": "unknown"}, "История расчётов": {"uz": "Hisob-kitoblar tarixi", "en": "Calculation history"}, "Экспорт всей истории": {"uz": "Butun tarixni eksport qilish", "en": "Export full history"}, "Открыть": {"uz": "Ochish", "en": "Open"}, "Пока нет сохранённых расчётов.": {"uz": "Hozircha saqlangan hisoblar yo‘q.", "en": "No saved calculations yet."}, "Не удалось подключиться к базе данных": {"uz": "Ma’lumotlar bazasiga ulanib bo‘lmadi", "en": "Couldn’t connect to the database"}, "Не удалось подключиться к базе данных (проверьте интернет)": {"uz": "Ma’lumotlar bazasiga ulanib bo‘lmadi (internetni tekshiring)", "en": "Couldn’t connect to the database (check your internet)"}, "Слишком долго нет ответа от базы данных — проверьте интернет-соединение или настройки Supabase.": {"uz": "Ma’lumotlar bazasi uzoq javob bermayapti — internet yoki Supabase sozlamalarini tekshiring.", "en": "The database is taking too long to respond — check your connection or Supabase settings."}, "Не удалось загрузить данные": {"uz": "Ma’lumotlarni yuklab bo‘lmadi", "en": "Couldn’t load data"}, "Не удалось сохранить настройки: ": {"uz": "Sozlamalarni saqlab bo‘lmadi: ", "en": "Couldn’t save settings: "}, "Не удалось изменить пользователя: ": {"uz": "Foydalanuvchini o‘zgartirib bo‘lmadi: ", "en": "Couldn’t update user: "}, "Не удалось удалить пользователя: ": {"uz": "Foydalanuvchini o‘chirib bo‘lmadi: ", "en": "Couldn’t delete user: "}, "Не удалось удалить: ": {"uz": "O‘chirib bo‘lmadi: ", "en": "Couldn’t delete: "}, "Ставка налога пока не сохраняется в базе (остальные настройки сохранены). Один раз выполните в Supabase → SQL Editor: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;": {"uz": "Soliq stavkasi hali bazada saqlanmaydi (boshqa sozlamalar saqlandi). Supabase → SQL Editor’da bir marta bajaring: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;", "en": "The tax rate isn’t saved in the database yet (other settings are). Run once in Supabase → SQL Editor: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;"}, "Сумма 100% премии, сум ": {"uz": "100% mukofot summasi, so‘m", "en": "Bonus at 100%, UZS"}, "Выполнение, %": {"uz": "Bajarilish, %", "en": "Completion, %"}, "Вклад, %": {"uz": "Hissa, %", "en": "Contribution, %"}, "Итоговый KPI": {"uz": "Yakuniy KPI", "en": "Overall KPI"}, "История KPI": {"uz": "KPI tarixi", "en": "KPI history"}, "Нужно подключить базу данных": {"uz": "Ma’lumotlar bazasini ulash kerak", "en": "Database needs to be connected"}, "Откройте этот файл в текстовом редакторе и впишите SUPABASE_URL и SUPABASE_ANON_KEY (вверху script-блока) — их можно найти в вашем проекте Supabase → Settings → API.": {"uz": "Bu faylni matn muharririda oching va SUPABASE_URL hamda SUPABASE_ANON_KEY ni kiriting (script blokining yuqorisida) — ularni Supabase → Settings → API bo‘limida topasiz.", "en": "Open this file in a text editor and fill in SUPABASE_URL and SUPABASE_ANON_KEY (top of the script block) — find them in Supabase → Settings → API."}, "Не удалось подключиться": {"uz": "Ulanib bo‘lmadi", "en": "Couldn’t connect"}, "Попробовать снова": {"uz": "Qayta urinish", "en": "Try again"}, "Расчёт премии по показателям": {"uz": "Ko‘rsatkichlar bo‘yicha mukofot hisobi", "en": "Bonus calculation by metrics"}, "Гость (без регистрации)": {"uz": "Mehmon (ro‘yxatdan o‘tmagan)", "en": "Guest (not registered)"}, "Выйти": {"uz": "Chiqish", "en": "Log out"}, "Строка {row}, «{name}»: не удалось прочитать «{ind}» — поставлено 0": {"uz": "{row}-qator, «{name}»: «{ind}» o‘qilmadi — 0 qo‘yildi", "en": "Row {row}, “{name}”: couldn’t read “{ind}” — set to 0"}};
+Object.assign(APP_DICT, {
+  "Учитывать перевыполнение выше 100% для премии": {"uz": "Mukofot uchun 100% dan ortiq bajarilishni hisobga olish", "en": "Count overachievement above 100% in the bonus"},
+  "ВКЛ: показатель учитывается полностью (до 120%), премия может быть больше базы.": {"uz": "YONIQ: ko‘rsatkich to‘liq hisobga olinadi (120% gacha), mukofot bazadan ko‘p bo‘lishi mumkin.", "en": "ON: each metric counts in full (up to 120%); the bonus can exceed the base."},
+  "ВЫКЛ: каждый показатель для премии не выше 100%, премия не больше базы.": {"uz": "O‘CHIQ: mukofot uchun har bir ko‘rsatkich 100% dan oshmaydi, mukofot bazadan ko‘p emas.", "en": "OFF: each metric is capped at 100% for the bonus; the bonus never exceeds the base."},
+  "Оценка (буква) не меняется. Доступно только Super Admin.": {"uz": "Baho (harf) o‘zgarmaydi. Faqat Super Admin uchun.", "en": "The letter grade doesn’t change. Super Admin only."},
+  "KPI для премии: {k}%": {"uz": "Mukofot uchun KPI: {k}%", "en": "Bonus KPI: {k}%"},
+  "с перевыполнением (до 120%)": {"uz": "rejadan oshirib bajarish bilan (120% gacha)", "en": "with overachievement (up to 120%)"},
+  "каждый показатель не выше 100%": {"uz": "har bir ko‘rsatkich 100% dan oshmaydi", "en": "each metric capped at 100%"},
+  "Сохранено: {v} сум — нажмите «Рассчитать KPI», чтобы сохранить новую сумму.": {"uz": "Saqlangan: {v} so‘m — yangi summani saqlash uchun «KPI ni hisoblash»ni bosing.", "en": "Saved: {v} UZS — press “Calculate KPI” to save the new amount."},
+  "KPI для премии, %": {"uz": "Mukofot uchun KPI, %", "en": "Bonus KPI, %"},
+  "Режим премии пока не сохраняется в базе (остальные настройки сохранены). Один раз выполните в Supabase → SQL Editor: alter table kpi_settings add column if not exists pay_overachievement boolean default false;": {"uz": "Mukofot rejimi hali bazada saqlanmaydi (boshqa sozlamalar saqlandi). Supabase → SQL Editor’da bir marta bajaring: alter table kpi_settings add column if not exists pay_overachievement boolean default false;", "en": "The bonus mode isn’t saved in the database yet (other settings are). Run once in Supabase → SQL Editor: alter table kpi_settings add column if not exists pay_overachievement boolean default false;"},
+});
 function T(text, vars) {
   let out = APP_LANG === "ru" ? text : ((APP_DICT[text] || {})[APP_LANG] || text);
   if (vars) Object.keys(vars).forEach((k) => { out = out.split("{" + k + "}").join(vars[k]); });
@@ -1544,6 +1574,17 @@ const DEFAULT_TAX_RATE = 7.5;
 const TAX_COLUMN_HINT = "Ставка налога пока не сохраняется в базе (остальные настройки сохранены). Один раз выполните в Supabase → SQL Editor: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;";
 const taxRateOf = (settings) => { const v = Number(settings?.tax_rate); return Number.isFinite(v) && v >= 0 && v <= 100 ? v : DEFAULT_TAX_RATE; };
 const resultTaxRate = (result) => { const v = Number(result?.tax_rate); return Number.isFinite(v) && v >= 0 && v <= 100 ? v : DEFAULT_TAX_RATE; };
+// Режим премии: учитывать ли перевыполнение выше 100% (settings.pay_overachievement).
+// Включать/выключать может только Super Admin; у остальных всегда «не выше 100%».
+const PAY_MODE_COLUMN_HINT = "Режим премии пока не сохраняется в базе (остальные настройки сохранены). Один раз выполните в Supabase → SQL Editor: alter table kpi_settings add column if not exists pay_overachievement boolean default false;";
+const payOverachievementOf = (settings, profile) => isSuperAdmin(profile) && settings?.pay_overachievement === true;
+// «Денежный» KPI сохранённого результата; у старых расчётов его нет — считаем из показателей.
+const resultPayOverall = (result) => {
+  const v = Number(result?.pay_overall);
+  if (result && result.pay_overall != null && Number.isFinite(v)) return v;
+  return (result?.perIndicator || []).reduce((sum, p) => sum + (Math.min(Number(p.percent) || 0, 100) * (Number(p.weight) || 0)) / 100, 0);
+};
+const premiumKpiOf = (result, allowOver) => allowOver ? (Number(result?.overall) || 0) : resultPayOverall(result);
 const afterTax = (amount, ratePct = DEFAULT_TAX_RATE) => Number(amount || 0) * (1 - ratePct / 100);
 const formatPct = (v) => { const s = String(Math.round(v * 100) / 100); return APP_LANG === "en" ? s : s.replace(".", ","); };
 
@@ -2180,6 +2221,27 @@ function EmployeesPage({ employees, records = {}, onAdd, onRemove, onOpenCard, c
   );
 }
 
+// Переключатель режима премии (виден только Super Admin).
+function PayModeToggle({ value, onChange, compact }) {
+  return (
+    <label style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: compact ? 13 : 14, cursor: "pointer", maxWidth: 520 }}>
+      <span role="switch" aria-checked={value} tabIndex={0}
+        onClick={(e) => { e.preventDefault(); onChange(!value); }}
+        onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onChange(!value); } }}
+        style={{ flex: "0 0 auto", width: 38, height: 22, borderRadius: 11, background: value ? BLUE : BORDER, position: "relative", transition: "background .15s", marginTop: 1 }}>
+        <span style={{ position: "absolute", top: 3, left: value ? 19 : 3, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,.25)" }} />
+      </span>
+      <span onClick={(e) => { e.preventDefault(); onChange(!value); }}>
+        <span style={{ color: TEXT, fontWeight: 500 }}>{T("Учитывать перевыполнение выше 100% для премии")}</span>
+        <span style={{ display: "block", fontSize: 12, color: MUTED, marginTop: 2 }}>
+          {value ? T("ВКЛ: показатель учитывается полностью (до 120%), премия может быть больше базы.") : T("ВЫКЛ: каждый показатель для премии не выше 100%, премия не больше базы.")}
+          {" "}{T("Оценка (буква) не меняется. Доступно только Super Admin.")}
+        </span>
+      </span>
+    </label>
+  );
+}
+
 // Ставка налога с премии: кнопки −/+ меняют на 0,5%, можно ввести и вручную (0–100%).
 function TaxRateField({ value, onChange }) {
   const set = (v) => onChange(Math.min(100, Math.max(0, Math.round(v * 100) / 100)));
@@ -2441,6 +2503,9 @@ function SettingsPage({ settings, onChange, isSuperAdmin, settingsTarget, onSwit
           <NumberField value={settings.norm_hours} onChange={(v) => onChange({ ...settings, norm_hours: v })} width="70px" />
         </label>
         <TaxRateField value={taxRateOf(settings)} onChange={(v) => onChange({ ...settings, tax_rate: v })} />
+        {isSuperAdmin && settingsTarget !== "default" && (
+          <PayModeToggle value={settings.pay_overachievement === true} onChange={(v) => onChange({ ...settings, pay_overachievement: v })} />
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14 }}>
           <span style={{ color: MUTED }}>{T("Формула расчёта")}</span>
           {[{ id: "linear", label: T("Линейная") }, { id: "threshold", label: T("Ступенчатая") }].map((f) => (
@@ -2598,8 +2663,13 @@ function UsersPage({ users, onUpdateUser, onDeleteUser, myId, pendingRoles, onAd
 }
 
 // ---------------- Employee card page ----------------
-function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, normHours, baseAmount, facts, hoursWorked, result, recordId, savedAt, grades, onFactChange, onHoursChange, onCalculate, onBack, onExport, onDelete, readOnly }) {
+function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, normHours, baseAmount, facts, hoursWorked, result, recordId, savedAt, grades, onFactChange, onHoursChange, onCalculate, onBack, onExport, onDelete, readOnly, payOverachievement, onTogglePayMode }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Премия пересчитывается сразу (режим, часы) — без повторного нажатия «Рассчитать KPI».
+  const premiumKpi = result ? premiumKpiOf(result, payOverachievement) : 0;
+  const livePremium = result ? computePremium(premiumKpi, hoursWorked, normHours, baseAmount, payOverachievement) : 0;
+  const liveTaxRate = result ? resultTaxRate(result) : DEFAULT_TAX_RATE;
+  const premiumChanged = result && recordId && Math.abs(livePremium - Number(result.premium || 0)) >= 1;
   const handleDelete = () => {
     if (!confirmDelete) { setConfirmDelete(true); return; }
     onDelete(recordId);
@@ -2665,9 +2735,15 @@ function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, 
                 <div style={{ fontSize: 11, fontWeight: 700, color: gradeColor(result.grade), marginTop: 4, whiteSpace: "nowrap" }}>{gradeWord(result.grade)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, textTransform: "uppercase", color: MUTED }}>{T("Премия (макс. {n})", { n: formatSum(baseAmount) })}</div>
-                <div style={{ fontSize: 20, fontWeight: 600, fontFamily: NUM_FONT, color: TEXT }}>{formatSum(result.premium)} {T("сум")}</div>
-                <div style={{ fontSize: 13, fontFamily: NUM_FONT, color: MUTED }}>{T("После налога ({p}%): {v}", { p: formatPct(resultTaxRate(result)), v: formatSum(afterTax(result.premium, resultTaxRate(result))) })} {T("сум")}</div>
+                <div style={{ fontSize: 11, textTransform: "uppercase", color: MUTED }}>{T("Премия (макс. {n})", { n: formatSum(payOverachievement ? baseAmount * window.KpiCore.INDICATOR_PERCENT_CAP / 100 : baseAmount) })}</div>
+                <div data-testid="premium" style={{ fontSize: 20, fontWeight: 600, fontFamily: NUM_FONT, color: TEXT }}>{formatSum(livePremium)} {T("сум")}</div>
+                <div data-testid="premium-after-tax" style={{ fontSize: 13, fontFamily: NUM_FONT, color: MUTED }}>{T("После налога ({p}%): {v}", { p: formatPct(liveTaxRate), v: formatSum(afterTax(livePremium, liveTaxRate)) })} {T("сум")}</div>
+                <div data-testid="premium-kpi" style={{ fontSize: 12, fontFamily: NUM_FONT, color: MUTED, marginTop: 2 }}>
+                  {T("KPI для премии: {k}%", { k: premiumKpi.toFixed(1) })} · {payOverachievement ? T("с перевыполнением (до 120%)") : T("каждый показатель не выше 100%")}
+                </div>
+                {premiumChanged && (
+                  <div style={{ fontSize: 12, color: RED, marginTop: 2 }}>{T("Сохранено: {v} сум — нажмите «Рассчитать KPI», чтобы сохранить новую сумму.", { v: formatSum(result.premium) })}</div>
+                )}
               </div>
             </div>
             <Btn onClick={onExport}><DownloadIcon size={15} /> {T("Экспорт в Excel")}</Btn>
@@ -2679,6 +2755,11 @@ function EmployeeCardPage({ employee, month, onMonthChange, snapshotIndicators, 
               </button>
             )}
           </div>
+          {onTogglePayMode && (
+            <div style={{ marginBottom: 16, padding: "10px 12px", borderRadius: 10, border: `1px dashed ${BORDER}` }}>
+              <PayModeToggle value={payOverachievement} onChange={onTogglePayMode} compact />
+            </div>
+          )}
           <div style={{ paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
             <div style={{ fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: MUTED, marginBottom: 12 }}>{T("Из чего сложился KPI")}</div>
             <KpiBreakdown perIndicator={result.perIndicator} />
@@ -2728,14 +2809,14 @@ function ImportPage({ settings, month, onMonthChange, onCommit, lastSummary, onD
     if (!lastSummary || lastSummary.length === 0) return;
     if (!(await ensureXlsx())) return;
     const indHeaders = activeIndicators(settings).flatMap((i) => [`${TT(i.name)}, %`, `${TT(i.name)}, ${T("оценка")}`]);
-    const header = [T("Сотрудник"), ...indHeaders, T("Часы"), T("Итоговый KPI, %"), T("Оценка"), T("Премия, сум"), T("Налог, %"), T("Премия после налога, сум")];
+    const header = [T("Сотрудник"), ...indHeaders, T("Часы"), T("Итоговый KPI, %"), T("KPI для премии, %"), T("Оценка"), T("Премия, сум"), T("Налог, %"), T("Премия после налога, сум")];
     const body = lastSummary.map((s) => {
       const map = {}; s.result.perIndicator.forEach((p) => map[p.id] = p.percent);
       const indValues = activeIndicators(settings).flatMap((i) => {
         const pct = map[i.id] ?? 0;
         return [Math.round(pct * 10) / 10, gradeFor(pct, settings.grades)];
       });
-      return [s.name, ...indValues, s.hoursWorked, Math.round(s.result.overall * 10) / 10, s.result.grade, Math.round(s.result.premium), resultTaxRate(s.result), Math.round(afterTax(s.result.premium, resultTaxRate(s.result)))];
+      return [s.name, ...indValues, s.hoursWorked, Math.round(s.result.overall * 10) / 10, Math.round(premiumKpiOf(s.result, s.result.pay_overachievement === true) * 10) / 10, s.result.grade, Math.round(s.result.premium), resultTaxRate(s.result), Math.round(afterTax(s.result.premium, resultTaxRate(s.result)))];
     });
     const ws = XLSX.utils.aoa_to_sheet([[`${T("Период")}: ${monthLabel(summaryMonth)}`], [], header, ...body]);
     ws["!cols"] = header.map(() => ({ wch: 16 }));
@@ -3052,13 +3133,19 @@ function KpiApp() {
     setSettings(next); // optimistic
     const targetUserId = settingsTarget === "default" ? DEFAULT_TEMPLATE_ID : session.user.id;
     const payload = { ...next, user_id: targetUserId, updated_at: new Date().toISOString() };
-    let { error } = await sb.from("kpi_settings").upsert(payload, { onConflict: "user_id" });
-    if (error && /tax_rate/.test(error.message || "")) {
-      // В базе ещё нет колонки tax_rate — сохраняем остальное и подсказываем, что сделать.
-      const { tax_rate, ...rest } = payload;
-      ({ error } = await sb.from("kpi_settings").upsert(rest, { onConflict: "user_id" }));
-      if (!error) { setLoadError(T(TAX_COLUMN_HINT)); return; }
+    let body = payload;
+    let { error } = await sb.from("kpi_settings").upsert(body, { onConflict: "user_id" });
+    // В базе может ещё не быть новых колонок — убираем отсутствующую, сохраняем
+    // остальное и подсказываем, какой SQL выполнить.
+    const hints = [];
+    for (let i = 0; i < 2 && error; i++) {
+      const msg = error.message || "";
+      if (/tax_rate/.test(msg) && "tax_rate" in body) { const { tax_rate, ...rest } = body; body = rest; hints.push(T(TAX_COLUMN_HINT)); }
+      else if (/pay_overachievement/.test(msg) && "pay_overachievement" in body) { const { pay_overachievement, ...rest } = body; body = rest; hints.push(T(PAY_MODE_COLUMN_HINT)); }
+      else break;
+      ({ error } = await sb.from("kpi_settings").upsert(body, { onConflict: "user_id" }));
     }
+    if (!error && hints.length) { setLoadError(hints.join(" ")); return; }
     if (error) { setLoadError(T("Не удалось сохранить настройки: ") + error.message); loadAll(); }
   };
   const updateUser = async (userId, patch) => {
@@ -3096,10 +3183,11 @@ function KpiApp() {
   const handleFactChange = (indId, value) => setDraftFacts((prev) => ({ ...prev, [indId]: value }));
 
   const handleCalculate = async () => {
-    const { perIndicator, overall } = computeOverall(snapshotIndicators, draftFacts, snapshotFormula);
+    const { perIndicator, overall, payOverall } = computeOverall(snapshotIndicators, draftFacts, snapshotFormula);
     const grade = gradeFor(overall, settings.grades);
-    const premium = computePremium(overall, draftHours, snapshotNormHours, snapshotBase);
-    const result = { perIndicator, overall, grade, premium, tax_rate: taxRateOf(settings) };
+    const allowOver = payOverachievementOf(settings, profile);
+    const premium = computePremium(allowOver ? overall : payOverall, draftHours, snapshotNormHours, snapshotBase, allowOver);
+    const result = { perIndicator, overall, pay_overall: payOverall, pay_overachievement: allowOver, grade, premium, tax_rate: taxRateOf(settings) };
     setDraftResult(result);
     const payload = {
       employee_id: cardParams.employeeId,
@@ -3127,7 +3215,7 @@ function KpiApp() {
     const meta = [[T("Сотрудник"), emp?.name || "—"], [T("Период"), monthLabel(cardParams.month)], [T("Часы"), `${draftHours} / ${snapshotNormHours}`], [T("Сумма 100% премии, сум"), snapshotBase], []];
     const header = [T("Показатель"), T("Минимум"), T("Норматив"), T("Факт"), T("Выполнение, %"), T("Оценка"), T("Вес, %"), T("Вклад, %")];
     const body = draftResult.perIndicator.map((p) => [TT(p.name), p.min, p.norm, p.actual, Math.round(p.percent * 10) / 10, gradeFor(p.percent, settings.grades), p.weight, Math.round(p.contribution * 10) / 10]);
-    const footer = [[], [T("Итоговый KPI"), "", "", "", Math.round(draftResult.overall * 10) / 10], [T("Оценка"), "", "", "", draftResult.grade], [T("Премия, сум"), "", "", "", Math.round(draftResult.premium)], [T("Налог, %"), "", "", "", resultTaxRate(draftResult)], [T("Премия после налога, сум"), "", "", "", Math.round(afterTax(draftResult.premium, resultTaxRate(draftResult)))]];
+    const footer = [[], [T("Итоговый KPI"), "", "", "", Math.round(draftResult.overall * 10) / 10], [T("KPI для премии, %"), "", "", "", Math.round(premiumKpiOf(draftResult, draftResult.pay_overachievement === true) * 10) / 10], [T("Оценка"), "", "", "", draftResult.grade], [T("Премия, сум"), "", "", "", Math.round(draftResult.premium)], [T("Налог, %"), "", "", "", resultTaxRate(draftResult)], [T("Премия после налога, сум"), "", "", "", Math.round(afterTax(draftResult.premium, resultTaxRate(draftResult)))]];
     const ws = XLSX.utils.aoa_to_sheet([...meta, header, ...body, ...footer]);
     ws["!cols"] = [{ wch: 26 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 9 }, { wch: 8 }, { wch: 9 }];
     const wb = XLSX.utils.book_new();
@@ -3137,10 +3225,10 @@ function KpiApp() {
 
   const exportAllHistory = async () => {
     if (!(await ensureXlsx())) return;
-    const header = [T("Сотрудник"), T("Период"), T("Итоговый KPI, %"), T("Оценка"), T("Премия, сум"), T("Налог, %"), T("Премия после налога, сум")];
+    const header = [T("Сотрудник"), T("Период"), T("Итоговый KPI, %"), T("KPI для премии, %"), T("Оценка"), T("Премия, сум"), T("Налог, %"), T("Премия после налога, сум")];
     const body = Object.values(records).filter((r) => r.result).map((r) => {
       const name = employees.find((e) => e.id === r.employee_id)?.name || "—";
-      return [name, monthLabel(r.month), Math.round(r.result.overall * 10) / 10, r.result.grade, Math.round(r.result.premium), resultTaxRate(r.result), Math.round(afterTax(r.result.premium, resultTaxRate(r.result)))];
+      return [name, monthLabel(r.month), Math.round(r.result.overall * 10) / 10, Math.round(premiumKpiOf(r.result, r.result.pay_overachievement === true) * 10) / 10, r.result.grade, Math.round(r.result.premium), resultTaxRate(r.result), Math.round(afterTax(r.result.premium, resultTaxRate(r.result)))];
     });
     const ws = XLSX.utils.aoa_to_sheet([header, ...body]);
     ws["!cols"] = [{ wch: 24 }, { wch: 16 }, { wch: 14 }, { wch: 10 }, { wch: 14 }];
@@ -3171,11 +3259,12 @@ function KpiApp() {
         if (data) { emp = data; setEmployees((prev) => [...prev, data]); }
       }
       if (!emp) continue;
-      const { perIndicator, overall } = computeOverall(activeIndicators(settings), row.facts, settings.formula_type);
+      const { perIndicator, overall, payOverall } = computeOverall(activeIndicators(settings), row.facts, settings.formula_type);
       const grade = gradeFor(overall, settings.grades);
       const hoursWorked = row.hoursWorked ?? settings.norm_hours;
-      const premium = computePremium(overall, hoursWorked, settings.norm_hours, settings.base_amount);
-      const result = { perIndicator, overall, grade, premium, tax_rate: taxRateOf(settings) };
+      const allowOver = payOverachievementOf(settings, profile);
+      const premium = computePremium(allowOver ? overall : payOverall, hoursWorked, settings.norm_hours, settings.base_amount, allowOver);
+      const result = { perIndicator, overall, pay_overall: payOverall, pay_overachievement: allowOver, grade, premium, tax_rate: taxRateOf(settings) };
       const payload = {
         employee_id: emp.id, month, facts: row.facts, hours_worked: hoursWorked,
         indicators_snapshot: activeIndicators(settings), formula_type: settings.formula_type,
@@ -3190,11 +3279,12 @@ function KpiApp() {
     }
     const summary = [];
     for (const row of rows) {
-      const { perIndicator, overall } = computeOverall(activeIndicators(settings), row.facts, settings.formula_type);
+      const { perIndicator, overall, payOverall } = computeOverall(activeIndicators(settings), row.facts, settings.formula_type);
       const grade = gradeFor(overall, settings.grades);
       const hoursWorked = row.hoursWorked ?? settings.norm_hours;
-      const premium = computePremium(overall, hoursWorked, settings.norm_hours, settings.base_amount);
-      summary.push({ name: row.name, hoursWorked, recordId: savedIds[row.name.trim().toLowerCase()], result: { perIndicator, overall, grade, premium, tax_rate: taxRateOf(settings) } });
+      const allowOver = payOverachievementOf(settings, profile);
+      const premium = computePremium(allowOver ? overall : payOverall, hoursWorked, settings.norm_hours, settings.base_amount, allowOver);
+      summary.push({ name: row.name, hoursWorked, recordId: savedIds[row.name.trim().toLowerCase()], result: { perIndicator, overall, pay_overall: payOverall, pay_overachievement: allowOver, grade, premium, tax_rate: taxRateOf(settings) } });
     }
     setImportSummary(summary);
   };
@@ -3311,6 +3401,8 @@ function KpiApp() {
               onBack={() => setView(returnView)}
               onExport={exportCard}
               onDelete={deleteRecord}
+              payOverachievement={payOverachievementOf(settings, profile)}
+              onTogglePayMode={isSuperAdmin(profile) ? (v) => changeSettings({ ...settings, pay_overachievement: v }) : null}
             />
           )}
         </React.Fragment>
