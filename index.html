@@ -3006,7 +3006,16 @@ function KpiApp() {
     return () => document.removeEventListener("l:lang", onLang);
   }, []);
   useEffect(() => {
-    const onEnter = () => setPastLanding(true);
+    // «Войти» / «Рассчитать KPI» на лендинге всегда начинают с гостевого входа:
+    // ранее выбранный вход по email не должен навсегда прятать демо-доступ
+    // (ссылка «войти по email» на экране входа остаётся).
+    const onEnter = () => {
+      setPastLanding(true);
+      if (GUEST_MODE_ENABLED) {
+        setShowEmailLogin(false);
+        try { localStorage.removeItem("kpi-prefer-email-login"); } catch (e) {}
+      }
+    };
     const onLeave = () => setPastLanding(false);
     window.addEventListener("kpi:enter", onEnter);
     window.addEventListener("kpi:leave", onLeave);
