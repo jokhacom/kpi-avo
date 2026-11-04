@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Манифест надстройки Unoom KPI для Excel.
+  Все адреса ниже указывают на сайт https://www.doppi.site.
+  Если сайт открывается по другому адресу (свой домен или узбекский сервер),
+  замените www.doppi.site на него во всём файле.
+-->
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+  <Id>145ada6f-11c5-4eb2-b378-97008e6938f4</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Unoom</ProviderName>
+  <DefaultLocale>ru-RU</DefaultLocale>
+  <DisplayName DefaultValue="Unoom KPI" />
+  <Description DefaultValue="Расчёт KPI и премий по данным листа Excel — по тем же правилам, что на сайте Unoom." />
+  <IconUrl DefaultValue="https://www.doppi.site/icons/favicon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://www.doppi.site/icons/icon-192.png" />
+  <SupportUrl DefaultValue="https://www.doppi.site/" />
+  <AppDomains>
+    <AppDomain>https://www.doppi.site</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Workbook" />
+  </Hosts>
+  <Requirements>
+    <Sets DefaultMinVersion="1.1">
+      <Set Name="ExcelApi" MinVersion="1.7" />
+    </Sets>
+  </Requirements>
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://www.doppi.site/excel/taskpane.html" />
+  </DefaultSettings>
+  <Permissions>ReadWriteDocument</Permissions>
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Workbook">
+        <DesktopFormFactor>
+          <GetStarted>
+            <Title resid="GetStarted.Title" />
+            <Description resid="GetStarted.Description" />
+            <LearnMoreUrl resid="Site.Url" />
+          </GetStarted>
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="Unoom.Group">
+                <Label resid="Group.Label" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16" />
+                  <bt:Image size="32" resid="Icon.32" />
+                  <bt:Image size="80" resid="Icon.80" />
+                </Icon>
+                <Control xsi:type="Button" id="Unoom.OpenPane">
+                  <Label resid="Button.Label" />
+                  <Supertip>
+                    <Title resid="Button.Label" />
+                    <Description resid="Button.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>UnoomKpiPane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16" DefaultValue="https://www.doppi.site/icons/favicon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://www.doppi.site/icons/favicon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://www.doppi.site/icons/icon-192.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://www.doppi.site/excel/taskpane.html" />
+        <bt:Url id="Site.Url" DefaultValue="https://www.doppi.site/" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="GetStarted.Title" DefaultValue="Unoom KPI готов к работе" />
+        <bt:String id="Group.Label" DefaultValue="Unoom" />
+        <bt:String id="Button.Label" DefaultValue="Unoom KPI" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="GetStarted.Description" DefaultValue="На вкладке «Главная» нажмите «Unoom KPI», затем «Рассчитать»." />
+        <bt:String id="Button.Tooltip" DefaultValue="Открыть панель Unoom KPI и рассчитать KPI по данным листа." />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
