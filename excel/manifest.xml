@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Манифест надстройки Unoom KPI для Excel.
-  Все адреса ниже указывают на сайт https://kpi-avo.vercel.app.
+  Все адреса ниже указывают на сайт https://www.doppi.site.
   Если сайт открывается по другому адресу (свой домен или узбекский сервер),
-  замените kpi-avo.vercel.app на него во всём файле.
+  замените www.doppi.site на него во всём файле.
 -->
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -16,11 +16,11 @@
   <DefaultLocale>ru-RU</DefaultLocale>
   <DisplayName DefaultValue="Unoom KPI" />
   <Description DefaultValue="Расчёт KPI и премий по данным листа Excel — по тем же правилам, что на сайте Unoom." />
-  <IconUrl DefaultValue="https://kpi-avo.vercel.app/icons/favicon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://kpi-avo.vercel.app/icons/icon-192.png" />
-  <SupportUrl DefaultValue="https://kpi-avo.vercel.app/" />
+  <IconUrl DefaultValue="https://www.doppi.site/icons/favicon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://www.doppi.site/icons/icon-192.png" />
+  <SupportUrl DefaultValue="https://www.doppi.site/" />
   <AppDomains>
-    <AppDomain>https://kpi-avo.vercel.app</AppDomain>
+    <AppDomain>https://www.doppi.site</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook" />
@@ -31,7 +31,7 @@
     </Sets>
   </Requirements>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://kpi-avo.vercel.app/excel/taskpane.html" />
+    <SourceLocation DefaultValue="https://www.doppi.site/excel/taskpane.html" />
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -76,13 +76,13 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16" DefaultValue="https://kpi-avo.vercel.app/icons/favicon-16.png" />
-        <bt:Image id="Icon.32" DefaultValue="https://kpi-avo.vercel.app/icons/favicon-32.png" />
-        <bt:Image id="Icon.80" DefaultValue="https://kpi-avo.vercel.app/icons/icon-192.png" />
+        <bt:Image id="Icon.16" DefaultValue="https://www.doppi.site/icons/favicon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://www.doppi.site/icons/favicon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://www.doppi.site/icons/icon-192.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://kpi-avo.vercel.app/excel/taskpane.html" />
-        <bt:Url id="Site.Url" DefaultValue="https://kpi-avo.vercel.app/" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://www.doppi.site/excel/taskpane.html" />
+        <bt:Url id="Site.Url" DefaultValue="https://www.doppi.site/" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Unoom KPI готов к работе" />
