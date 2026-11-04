@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uz">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Unoom — система расчёта и управления KPI</title>
+<title>Unoom — KPI hisoblash va boshqaruv tizimi</title>
 <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32" />
 <link rel="icon" href="/icons/favicon-16.png" type="image/png" sizes="16x16" />
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="theme-color" content="#061331" />
-<meta name="description" content="Прозрачно измеряйте результат команды, автоматизируйте расчёты KPI и премий, импортируйте данные из Excel / CSV." />
+<meta name="description" content="Jamoa natijasini shaffof o‘lchang, KPI va mukofot hisob-kitoblarini avtomatlashtiring, ma’lumotlarni Excel / CSV dan import qiling." />
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <script>
@@ -40,8 +40,15 @@
   if (theme !== "system") root.setAttribute("data-theme", theme);
   root.setAttribute("data-theme-choice", theme);
 
-  // язык лендинга
-  var lang = store.get("avo-lang") || "ru";
+  // язык: по умолчанию узбекский. Запоминаем только явный выбор пользователя (ключ unoom-lang).
+  // Старый ключ avo-lang раньше записывался каждому посетителю как "ru" автоматически,
+  // поэтому из него переносим только uz / en — их пользователь точно выбрал сам.
+  var LANGS = ["uz", "ru", "en"];
+  var lang = store.get("unoom-lang");
+  if (LANGS.indexOf(lang) < 0) {
+    var legacy = store.get("avo-lang");
+    lang = legacy === "uz" || legacy === "en" ? legacy : "uz";
+  }
   root.setAttribute("lang", lang);
 
   var forceLanding = /[?&]home\b/.test(location.search);
@@ -766,17 +773,17 @@
     <div class="l-wrap">
       <a class="l-logo" href="#top" aria-label="Unoom KPI"><svg class="l-logo-mark" viewBox="0 0 200 166" aria-hidden="true"><use href="#i-logo"/></svg><span>unoom<span class="l-dim">.kpi</span></span></a>
       <nav class="l-nav">
-        <a href="#features" data-i18n="nav.features">Возможности</a>
-        <a href="#how" data-i18n="nav.how">Как это работает</a>
-        <a href="#calc" data-i18n="nav.calc">Калькулятор</a>
-        <a href="#pricing" data-i18n="nav.pricing">Цены</a>
-        <a href="#faq" data-i18n="nav.faq">Частые вопросы</a>
-        <button type="button" class="l-login" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+        <a href="#features" data-i18n="nav.features">Imkoniyatlar</a>
+        <a href="#how" data-i18n="nav.how">Qanday ishlaydi</a>
+        <a href="#calc" data-i18n="nav.calc">Kalkulyator</a>
+        <a href="#pricing" data-i18n="nav.pricing">Narxlar</a>
+        <a href="#faq" data-i18n="nav.faq">Savol-javob</a>
+        <button type="button" class="l-login" data-enter><span data-i18n="nav.login">Kirish</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
       </nav>
       <div class="l-controls">
         <div class="l-seg" role="group" aria-label="Language">
-          <button type="button" data-lang="ru">RU</button>
           <button type="button" data-lang="uz">UZ</button>
+          <button type="button" data-lang="ru">RU</button>
           <button type="button" data-lang="en">EN</button>
         </div>
         <div class="l-seg l-theme" role="group" aria-label="Theme">
@@ -792,30 +799,30 @@
     <section class="l-hero">
       <div class="l-wrap">
         <div class="l-hero-copy">
-          <div class="l-chip"><svg viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi-top"/></svg><span data-i18n="hero.chip">Сделано с любовью в Узбекистане</span></div>
+          <div class="l-chip"><svg viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi-top"/></svg><span data-i18n="hero.chip">O‘zbekistonda mehr bilan yaratilgan</span></div>
           <div class="l-kicker">Performance platform · KPI &amp; bonus</div>
-          <h1 data-i18n-html="hero.title">Система расчёта и&nbsp;управления <em>KPI</em></h1>
-          <p class="l-lead" data-i18n="hero.lead">Прозрачно измеряйте результат команды, автоматизируйте расчёты и принимайте решения на основе данных.</p>
+          <h1 data-i18n-html="hero.title"><em>KPI</em> hisoblash va boshqaruv tizimi</h1>
+          <p class="l-lead" data-i18n="hero.lead">Jamoa natijasini shaffof o‘lchang, hisob-kitoblarni avtomatlashtiring va ma’lumotlarga asoslangan qarorlar qabul qiling.</p>
           <div class="l-ctas">
-            <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="hero.cta">Рассчитать KPI</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
-            <a class="l-btn" href="#pricing" data-i18n="nav.pricing">Цены</a>
+            <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="hero.cta">KPI hisoblash</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+            <a class="l-btn" href="#pricing" data-i18n="nav.pricing">Narxlar</a>
           </div>
           <ul class="l-checks">
-            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check1">Своя шкала оценок</span></li>
+            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check1">O‘z baholash shkalangiz</span></li>
             <li><svg class="l-icon"><use href="#i-check"/></svg><span>Excel / CSV</span></li>
-            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check3">Роли и права</span></li>
+            <li><svg class="l-icon"><use href="#i-check"/></svg><span data-i18n="hero.check3">Rollar va huquqlar</span></li>
           </ul>
         </div>
 
         <div class="l-hero-viz" id="viz">
           <div class="l-viz-head">
             <div>
-              <div class="l-kicker" data-i18n="viz.kicker">Unoom / Как считается KPI</div>
-              <p class="l-viz-sub" data-i18n="viz.sub">Каждый этап расчёта виден и понятен.</p>
+              <div class="l-kicker" data-i18n="viz.kicker">Unoom / Quvnoq matematika</div>
+              <p class="l-viz-sub" data-i18n="viz.sub">Hisoblaymiz, jilmayamiz, o‘samiz.</p>
             </div>
             <button type="button" class="l-pause" id="viz-toggle" aria-pressed="false" data-i18n-label="viz.pause"><svg class="l-icon"><use href="#i-pause"/></svg></button>
           </div>
-          <span class="l-pill" data-i18n="viz.flow">Поток данных</span>
+          <span class="l-pill" data-i18n="viz.flow">Ma’lumotlar oqimi</span>
           <div class="l-gif" id="gif" aria-roledescription="carousel" aria-label="KPI GIF">
             <div class="l-gif-stage">
               <span class="l-gif-badge" aria-hidden="true">GIF</span>
@@ -829,13 +836,13 @@
                     <div class="g-keys"><span>7</span><span>8</span><span>9</span><span class="op">÷</span><span>4</span><span>5</span><span>6</span><span class="op">×</span><span>1</span><span>2</span><span>3</span><span class="op">%</span></div>
                   </div>
                 </div>
-                <figcaption><span data-i18n="gif.calc">Калькулятор в доппи считает премию</span><small data-i18n="gif.calcSub">Хоп — и 94.8% готово. Без Excel и бессонных ночей.</small></figcaption>
+                <figcaption><span data-i18n="gif.calc">Do‘ppili kalkulyator mukofotni hisoblaydi</span><small data-i18n="gif.calcSub">Bir zumda — 94.8% tayyor. Excel va uyqusiz tunlarsiz.</small></figcaption>
               </figure>
 
               <figure class="l-gif-scene" data-scene="pct">
                 <div class="g-confetti" aria-hidden="true"></div>
                 <div class="g-pct" aria-hidden="true">110<small>%</small></div>
-                <figcaption><span data-i18n="gif.pct">Перевыполнение плана!</span><small data-i18n="gif.pctSub">Факт выше плана — и выполнение больше 100%. Сильная сторона компенсирует слабую.</small></figcaption>
+                <figcaption><span data-i18n="gif.pct">Reja oshirib bajarildi!</span><small data-i18n="gif.pctSub">Fakt rejadan yuqori — bajarilish 100% dan oshadi. Kuchli tomon zaifini qoplaydi.</small></figcaption>
               </figure>
 
               <figure class="l-gif-scene" data-scene="formula">
@@ -845,7 +852,7 @@
                   <div class="g-row"><span class="g-tok" style="animation-delay:2.7s">25%</span><span class="g-tok op" style="animation-delay:2.9s">×</span><span class="g-tok" style="animation-delay:3.1s">72%</span><span class="g-tok op" style="animation-delay:3.3s">=</span><span class="g-tok hl" style="animation-delay:3.5s">18</span></div>
                   <div class="g-total"><span style="--w:36%;background:#EAFF00;animation-delay:3.7s"></span><span style="--w:35%;background:#12A3A3;animation-delay:3.9s"></span><span style="--w:18%;background:#E8A317;animation-delay:4.1s"></span></div>
                 </div>
-                <figcaption><span data-i18n="gif.formula">Вес × выполнение = вклад</span><small data-i18n="gif.formulaSub">36 + 35 + 18 = KPI 89%. Никакой магии — только честная математика.</small></figcaption>
+                <figcaption><span data-i18n="gif.formula">Vazn × bajarilish = hissa</span><small data-i18n="gif.formulaSub">36 + 35 + 18 = KPI 89%. Sehr yo‘q — faqat halol matematika.</small></figcaption>
               </figure>
 
               <figure class="l-gif-scene" data-scene="money">
@@ -855,18 +862,18 @@
                   <span class="g-hand">👆</span>
                 </div>
                 <div class="g-cash-sum" aria-hidden="true"><span class="g-count" data-to="1850000" data-int="1">0</span> so‘m</div>
-                <figcaption><span data-i18n="gif.money">Премия посчитана — пора считать купюры</span><small data-i18n="gif.moneySub">Unoom считает KPI, а купюры вы уже сами.</small></figcaption>
+                <figcaption><span data-i18n="gif.money">Mukofot hisoblandi — endi pullarni sanash vaqti</span><small data-i18n="gif.moneySub">Unoom KPI ni hisoblaydi, pullarni esa o‘zingiz sanaysiz.</small></figcaption>
               </figure>
 
               <figure class="l-gif-scene" data-scene="react">
                 <div class="g-react" aria-hidden="true"><span>😬</span><span>🙂</span><span>🤩</span></div>
                 <div class="g-react-num" aria-hidden="true"><span>45%</span><span>75%</span><span>98%</span></div>
                 <div class="g-react-bar" aria-hidden="true"><i></i></div>
-                <figcaption><span data-i18n="gif.react">Реакция на KPI</span><small data-i18n="gif.reactSub">Руководитель открывает отчёт: «Отлично!»</small></figcaption>
+                <figcaption><span data-i18n="gif.react">KPI ga munosabat</span><small data-i18n="gif.reactSub">Rahbar hisobotni ochadi: «Barakalla!»</small></figcaption>
               </figure>
             </div>
             <div class="l-gif-nav">
-              <b data-i18n="gif.series">Unoom · KPI-гифки</b>
+              <b data-i18n="gif.series">Unoom · KPI-giflar</b>
               <div class="l-gif-dots" role="tablist"></div>
             </div>
           </div>
@@ -879,13 +886,13 @@
     <section class="l-section" id="why">
       <div class="l-wrap">
         <div class="l-kicker">01 — Why</div>
-        <h2 data-i18n="why.title">Что такое KPI-калькулятор</h2>
-        <p class="l-lead l-sec-lead" data-i18n="why.lead">Коротко о том, что это, зачем это нужно и что вы получаете.</p>
+        <h2 data-i18n="why.title">KPI-kalkulyator nima</h2>
+        <p class="l-lead l-sec-lead" data-i18n="why.lead">Bu nima, nima uchun kerak va siz nimaga ega bo‘lasiz — qisqacha.</p>
         <div class="l-why">
-          <article class="l-why-card"><span class="l-why-ico">?</span><h3 data-i18n="why.q1">Что это</h3><p data-i18n="why.a1">Представьте честного бухгалтера, который не устаёт, не путается в Excel и не уходит в отпуск в конце месяца. Вы вносите план и факт — он выдаёт процент, оценку и премию.</p></article>
-          <article class="l-why-card"><span class="l-why-ico">!</span><h3 data-i18n="why.q2">Зачем он нужен</h3><p data-i18n="why.a2">Помните, как в конце месяца весь офис ищет ячейку, где «съехала» формула? А Дилшод уверен, что его премию считали «на глаз». Теперь — минуты вместо дней и ни одного «на глаз».</p></article>
-          <article class="l-why-card l-why-dark l-top-atlas"><span class="l-why-ico">+</span><h3 data-i18n="why.q3">Что мы даём</h3><ul data-i18n-html="why.a3"><li>Настройку показателей, весов и оценок под вашу компанию</li><li>Импорт целей и фактов из Excel/CSV</li><li>Расчёт KPI, оценки и премии с учётом налога</li><li>Историю расчётов и отчёты в Excel</li><li>Роли и права доступа для команды</li></ul></article>
-          <article class="l-why-card"><span class="l-why-ico">✓</span><h3 data-i18n="why.q4">Какие проблемы решает</h3><ul data-i18n-html="why.a4"><li>Ночные посиделки с Excel в конце месяца</li><li>Формула «съехала» — премия уехала</li><li>«А почему у него больше?» у кулера</li><li>Пять файлов «итог_финал_точно_финал.xlsx»</li><li>Никто не помнит, каким был март</li></li><li>Ошибки в формулах и при копировании</li><li>Непрозрачные премии и споры в команде</li><li>Разрозненные файлы у разных руководителей</li><li>Нет истории — не видно динамики</li></ul></article>
+          <article class="l-why-card"><span class="l-why-ico">?</span><h3 data-i18n="why.q1">Bu nima</h3><p data-i18n="why.a1">Charchamaydigan, Excel’da adashmaydigan va oy oxirida ta’tilga chiqmaydigan halol buxgalterni tasavvur qiling. Siz reja va faktni kiritasiz — u foiz, baho va mukofotni beradi.</p></article>
+          <article class="l-why-card"><span class="l-why-ico">!</span><h3 data-i18n="why.q2">Nima uchun kerak</h3><p data-i18n="why.a2">Oy oxirida butun ofis formula «siljib ketgan» katakni qidirganini eslaysizmi? Dilshod esa mukofotini «ko‘z chama» hisoblashgan deb o‘ylaydi. Endi — kunlar o‘rniga daqiqalar va hech qanday «ko‘z chamasiz».</p></article>
+          <article class="l-why-card l-why-dark l-top-atlas"><span class="l-why-ico">+</span><h3 data-i18n="why.q3">Biz nima beramiz</h3><ul data-i18n-html="why.a3"><li>Ko‘rsatkichlar, vaznlar va baholarni kompaniyangizga moslash</li><li>Maqsad va faktlarni Excel/CSV’dan import qilish</li><li>Soliqni hisobga olgan holda KPI, baho va mukofot hisobi</li><li>Hisoblar tarixi va Excel hisobotlari</li><li>Jamoa uchun rollar va kirish huquqlari</li></ul></article>
+          <article class="l-why-card"><span class="l-why-ico">✓</span><h3 data-i18n="why.q4">Qaysi muammolarni hal qiladi</h3><ul data-i18n-html="why.a4"><li>Oy oxirida Excel bilan tungi o‘tirishlar</li><li>Formula «siljidi» — mukofot ham ketdi</li><li>Kuler oldida «Nega unda ko‘proq?»</li><li>Beshta «yakuniy_aniq_yakuniy.xlsx» fayli</li><li>Mart qanday o‘tganini hech kim eslamaydi</li></ul></article>
         </div>
       </div>
     </section>
@@ -893,21 +900,21 @@
     <section class="l-section l-stats" id="numbers">
       <div class="l-wrap">
         <div class="l-kicker">02 — Unoom in numbers</div>
-        <h2 data-i18n="num.title">KPI в цифрах — понятно с первого взгляда</h2>
+        <h2 data-i18n="num.title">Raqamlarda KPI — bir qarashda tushunarli</h2>
         <div class="l-stat-grid">
-          <article class="l-stat l-side has-hat"><svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg><b><span data-count="3">3</span> <small class="l-stat-unit" data-i18n="num.steps">шага</small></b><h3 data-i18n="num.s1">От данных до премии</h3><p data-i18n="num.s1d">Добавили сотрудников, задали KPI, нажали кнопку — готово раньше, чем остынет чай в пиале.</p></article>
-          <article class="l-stat l-side"><b><span data-count="7.5" data-dec="1">7,5</span>%</b><h3 data-i18n="num.s2">Налог учтён</h3><p data-i18n="num.s2d">Сотрудник сразу видит сумму «на руки» — никаких сюрпризов в день зарплаты. Ставку можно поменять под вашу компанию.</p></article>
-          <article class="l-stat l-side"><b><span data-count="5">5</span> A–F</b><h3 data-i18n="num.s3">Понятных оценок</h3><p data-i18n="num.s3d">«Ты молодец на 87,3%» звучит как диагноз. «У тебя B» — понятно с первого взгляда. Шкалу можно настроить под себя.</p></article>
-          <article class="l-stat l-side"><b><span data-count="0">0</span> <small class="l-stat-unit" data-i18n="num.args">споров</small></b><h3 data-i18n="num.s4">«А почему у него больше?»</h3><p data-i18n="num.s4d">Формула открыта для всех — вопрос закрывается раньше, чем его успели задать у кулера.</p></article>
+          <article class="l-stat l-side has-hat"><svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg><b><span data-count="3">3</span> <small class="l-stat-unit" data-i18n="num.steps">qadam</small></b><h3 data-i18n="num.s1">Ma’lumotdan mukofotgacha</h3><p data-i18n="num.s1d">Xodimlarni qo‘shdingiz, KPI ni sozladingiz, tugmani bosdingiz — piyoladagi choy sovumasdan tayyor.</p></article>
+          <article class="l-stat l-side"><b><span data-count="7.5" data-dec="1">7,5</span>%</b><h3 data-i18n="num.s2">Soliq hisobga olingan</h3><p data-i18n="num.s2d">Xodim qo‘lga tegadigan summani darhol ko‘radi — oylik kuni hech qanday «syurpriz» yo‘q. Stavkani kompaniyangizga moslab o‘zgartirish mumkin.</p></article>
+          <article class="l-stat l-side"><b><span data-count="5">5</span> A–F</b><h3 data-i18n="num.s3">Tushunarli baho</h3><p data-i18n="num.s3d">«Siz 87,3% ga zo‘rsiz» — tashxisga o‘xshaydi. «Sizda B» — bir qarashda tushunarli. Shkalani o‘zingizga moslash mumkin.</p></article>
+          <article class="l-stat l-side"><b><span data-count="0">0</span> <small class="l-stat-unit" data-i18n="num.args">bahs</small></b><h3 data-i18n="num.s4">«Nega unda ko‘proq?»</h3><p data-i18n="num.s4d">Formula hammaga ochiq — savol kuler oldida berilishidan oldin yopiladi.</p></article>
         </div>
         <div class="l-demo l-top-atlas">
           <div class="l-demo-ring">
             <svg viewBox="0 0 170 170" aria-hidden="true"><circle cx="85" cy="85" r="72" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="14"/><circle class="l-demo-arc" cx="85" cy="85" r="72" fill="none" stroke="#EAFF00" stroke-width="14" stroke-linecap="round" stroke-dasharray="452.4" stroke-dashoffset="452.4" transform="rotate(-90 85 85)" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)"/></svg>
-            <div><b><span data-count="81.4" data-dec="1">81,4</span>%</b><small data-i18n="num.avg">средний KPI</small></div>
+            <div><b><span data-count="81.4" data-dec="1">81,4</span>%</b><small data-i18n="num.avg">o‘rtacha KPI</small></div>
           </div>
           <div>
-            <h3 data-i18n="num.demo">Как выглядит команда из 12 человек</h3>
-            <p class="l-demo-note" data-i18n="num.demoNote">Демо-пример распределения оценок за месяц</p>
+            <h3 data-i18n="num.demo">12 kishilik jamoa qanday ko‘rinadi</h3>
+            <p class="l-demo-note" data-i18n="num.demoNote">Oy bo‘yicha baholar taqsimotining demo namunasi</p>
             <div class="l-dist">
               <div class="l-dist-row"><em>A</em><div class="l-dist-bar"><i data-w="25"></i></div><span>3 · 25%</span></div>
               <div class="l-dist-row"><em>B</em><div class="l-dist-bar"><i data-w="42"></i></div><span>5 · 42%</span></div>
@@ -922,43 +929,43 @@
     <section class="l-section" id="how">
       <div class="l-wrap">
         <div class="l-kicker">03 — Workflow</div>
-        <h2 data-i18n="how.title">Как это работает</h2>
+        <h2 data-i18n="how.title">Bu qanday ishlaydi</h2>
         <div class="l-cards">
           <article class="l-card">
             <div class="l-card-top"><span>01</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
             <div class="l-mock l-mock-light" aria-hidden="true">
-              <div class="l-mock-head"><span data-i18n="viz.employees">Сотрудники</span><span class="l-plus">+</span></div>
+              <div class="l-mock-head"><span data-i18n="viz.employees">Xodimlar</span><span class="l-plus">+</span></div>
               <div class="l-row"><b>01</b><span></span><i></i></div>
               <div class="l-row"><b>02</b><span></span><i></i></div>
             </div>
-            <h3 data-i18n="s1.title">Добавьте сотрудников</h3>
-            <p data-i18n="s1.desc">Вся команда в одном месте — больше никаких списков на салфетке из чайханы.</p>
+            <h3 data-i18n="s1.title">Xodimlarni qo‘shing</h3>
+            <p data-i18n="s1.desc">Butun jamoa bir joyda — endi choyxonadagi salfetkaga yozilgan ro‘yxatlar yo‘q.</p>
           </article>
           <article class="l-card">
             <div class="l-card-top"><span>02</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
             <div class="l-mock l-mock-dark l-top-atlas" aria-hidden="true">
-              <div class="l-mock-head"><span data-i18n="s2.mock">Настройка KPI</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
-              <div class="l-meter"><div><span data-i18n="s2.quality">Качество</span><b>40%</b></div><div class="l-meter-bar"><span style="width:40%"></span></div></div>
-              <div class="l-meter"><div><span data-i18n="s2.speed">Скорость</span><b>60%</b></div><div class="l-meter-bar"><span style="width:60%"></span></div></div>
+              <div class="l-mock-head"><span data-i18n="s2.mock">KPI sozlamasi</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
+              <div class="l-meter"><div><span data-i18n="s2.quality">Sifat</span><b>40%</b></div><div class="l-meter-bar"><span style="width:40%"></span></div></div>
+              <div class="l-meter"><div><span data-i18n="s2.speed">Tezlik</span><b>60%</b></div><div class="l-meter-bar"><span style="width:60%"></span></div></div>
             </div>
-            <h3 data-i18n="s2.title">Настройте KPI</h3>
-            <p data-i18n="s2.desc">Решите, что важнее: продажи или вежливость с клиентами. Можно и то, и другое — веса поделят честно.</p>
+            <h3 data-i18n="s2.title">KPI ni sozlang</h3>
+            <p data-i18n="s2.desc">Nima muhimroq — savdomi yoki mijozlarga xushmuomalalikmi — o‘zingiz hal qiling. Ikkalasi ham bo‘ladi — vaznlar halol bo‘lib beradi.</p>
           </article>
           <article class="l-card">
             <div class="l-card-top"><span>03</span><svg class="l-icon"><use href="#i-sliders"/></svg></div>
             <div class="l-mock l-mock-lime" aria-hidden="true">
-              <div class="l-mock-head"><span data-i18n="s3.mock">Итог расчёта</span><svg class="l-icon" style="color:var(--l-lime-ink)"><use href="#i-trend"/></svg></div>
+              <div class="l-mock-head"><span data-i18n="s3.mock">Hisob yakuni</span><svg class="l-icon" style="color:var(--l-lime-ink)"><use href="#i-trend"/></svg></div>
               <div class="l-kpi">
                 <svg class="l-donut" viewBox="0 0 140 140">
                   <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(11,22,48,.12)" stroke-width="20"/>
                   <circle cx="70" cy="70" r="58" fill="none" stroke="#061331" stroke-width="20" stroke-dasharray="310 365" transform="rotate(-90 70 70)"/>
                   <text x="70" y="80" text-anchor="middle" font-size="30" font-weight="700" fill="#061331">KPI</text>
                 </svg>
-                <div><strong data-i18n="s3.ready">Расчёт готов</strong><span data-i18n="s3.bonus">Премия рассчитана</span></div>
+                <div><strong data-i18n="s3.ready">Hisob tayyor</strong><span data-i18n="s3.bonus">Mukofot hisoblandi</span></div>
               </div>
             </div>
-            <h3 data-i18n="s3.title">Рассчитайте результат</h3>
-            <p data-i18n="s3.desc">Итог и премия — за секунду. Остаётся только сказать «Отлично!».</p>
+            <h3 data-i18n="s3.title">Natijani hisoblang</h3>
+            <p data-i18n="s3.desc">Yakun va mukofot — bir soniyada. Faqat «Barakalla!» deyish qoladi.</p>
           </article>
         </div>
       </div>
@@ -968,13 +975,13 @@
       <div class="l-wrap l-calc">
         <div class="l-calc-copy">
           <div class="l-kicker">04 — Calculator</div>
-          <h2 data-i18n="calc.title">Калькулятор</h2>
-          <p class="l-lead" data-i18n="calc.lead">Обычный калькулятор — пользуйтесь мышкой или клавиатурой.</p>
+          <h2 data-i18n="calc.title">Kalkulyator</h2>
+          <p class="l-lead" data-i18n="calc.lead">Oddiy kalkulyator — tugmalarni bosing yoki klaviaturadan foydalaning.</p>
           <div class="l-calc-note">
             <svg viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg>
-            <p data-i18n="calc.note">Чтобы настроить KPI и рассчитывать премии сотрудников, нужно войти.</p>
+            <p data-i18n="calc.note">KPI ni sozlash va xodimlar mukofotini hisoblash uchun tizimga kiring.</p>
           </div>
-          <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+          <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="nav.login">Kirish</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
         </div>
         <div class="l-cl" id="cl" aria-label="Calculator">
           <div class="l-cl-top" aria-hidden="true"></div>
@@ -993,22 +1000,22 @@
     <section class="l-section" id="features">
       <div class="l-wrap">
         <div class="l-kicker">05 — Capabilities</div>
-        <h2 data-i18n="nav.features">Возможности</h2>
+        <h2 data-i18n="nav.features">Imkoniyatlar</h2>
         <div class="l-cards">
           <article class="l-card l-card-feature">
             <div class="l-feature-icon has-hat"><svg class="l-icon"><use href="#i-gauge"/></svg><svg class="l-hat l-hat-sm" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg></div>
-            <h3 data-i18n="f1.title">Расчёт KPI</h3>
-            <p data-i18n="f1.desc">Формула прозрачная, как утреннее небо над Чимганом: каждый видит, из чего сложился его результат.</p>
+            <h3 data-i18n="f1.title">KPI hisobi</h3>
+            <p data-i18n="f1.desc">Formula Chimyon ustidagi tonggi osmondek tiniq: har kim natijasi nimadan iboratligini ko‘radi.</p>
           </article>
           <article class="l-card l-card-feature">
             <div class="l-feature-icon"><svg class="l-icon"><use href="#i-file"/></svg></div>
-            <h3 data-i18n="f2.title">Импорт Excel / CSV</h3>
-            <p data-i18n="f2.desc">Загрузили файл — и забыли про «Ctrl+C, Ctrl+V» до самого Навруза.</p>
+            <h3 data-i18n="f2.title">Excel / CSV import</h3>
+            <p data-i18n="f2.desc">Faylni yukladingiz — Navro‘zgacha «Ctrl+C, Ctrl+V»ni unuting.</p>
           </article>
           <article class="l-card l-card-feature">
             <div class="l-feature-icon"><svg class="l-icon"><use href="#i-shield"/></svg></div>
-            <h3 data-i18n="f3.title">Роли и права доступа</h3>
-            <p data-i18n="f3.desc">Каждый видит свой результат: сотрудник радуется высокому KPI и начинает пересчитывать деньги, руководитель радуется за свою команду, а соседи — пусть завидуют 😜</p>
+            <h3 data-i18n="f3.title">Rollar va kirish huquqlari</h3>
+            <p data-i18n="f3.desc">Har kim o‘z natijasini o‘zi ko‘radi: xodim natijasi yuqoriligidan quvonib, pullarni sanashga tushadi, rahbar esa xodimlarini ko‘rib quvonadi. Qo‘shnilar esa — alam qilsin 😜</p>
           </article>
         </div>
       </div>
@@ -1017,13 +1024,13 @@
     <section class="l-section" id="reports">
       <div class="l-wrap">
         <div class="l-kicker">06 — Reports</div>
-        <h2 data-i18n="rep.title">Отчёты</h2>
-        <p class="l-lead l-sec-lead" data-i18n="rep.lead">Все расчёты сохраняются — их можно открыть в любой момент и выгрузить в Excel.</p>
+        <h2 data-i18n="rep.title">Hisobotlar</h2>
+        <p class="l-lead l-sec-lead" data-i18n="rep.lead">Barcha hisoblar saqlanadi — ularni istalgan vaqtda ochib, Excel’ga yuklab olish mumkin.</p>
         <div class="l-minis">
-          <article class="l-mini"><svg class="l-icon"><use href="#i-file"/></svg><h3 data-i18n="rep.t1">Карточка сотрудника</h3><p data-i18n="rep.d1">Вся картина сотрудника в одном Excel — хоть распечатай и повесь на холодильник.</p></article>
-          <article class="l-mini"><svg class="l-icon"><use href="#i-sliders"/></svg><h3 data-i18n="rep.t2">История расчётов</h3><p data-i18n="rep.d2">Все месяцы в одном списке. Март больше не потеряется.</p></article>
-          <article class="l-mini"><svg class="l-icon"><use href="#i-check"/></svg><h3 data-i18n="rep.t3">Результат импорта</h3><p data-i18n="rep.d3">Загрузили Excel на 50 человек — сводка готова раньше, чем все успели налить чай.</p></article>
-          <article class="l-mini"><svg class="l-icon"><use href="#i-trend"/></svg><h3 data-i18n="rep.t4">Пульс команды</h3><p data-i18n="rep.d4">Средний KPI, звезда месяца в доппи и тот, кому нужна поддержка.</p></article>
+          <article class="l-mini"><svg class="l-icon"><use href="#i-file"/></svg><h3 data-i18n="rep.t1">Xodim kartasi</h3><p data-i18n="rep.d1">Xodimning butun manzarasi bitta Excel’da — xohlasangiz chop etib, muzlatgichga iling.</p></article>
+          <article class="l-mini"><svg class="l-icon"><use href="#i-sliders"/></svg><h3 data-i18n="rep.t2">Hisoblar tarixi</h3><p data-i18n="rep.d2">Barcha oylar bitta ro‘yxatda. Mart endi yo‘qolmaydi.</p></article>
+          <article class="l-mini"><svg class="l-icon"><use href="#i-check"/></svg><h3 data-i18n="rep.t3">Import natijasi</h3><p data-i18n="rep.d3">50 kishilik Excel’ni yukladingiz — hamma choy quyib ulgurmasidan xulosa tayyor.</p></article>
+          <article class="l-mini"><svg class="l-icon"><use href="#i-trend"/></svg><h3 data-i18n="rep.t4">Jamoa pulsi</h3><p data-i18n="rep.d4">O‘rtacha KPI, do‘ppi kiygan oy yulduzi va yordamga muhtoj xodim.</p></article>
         </div>
       </div>
     </section>
@@ -1031,10 +1038,10 @@
     <section class="l-section" id="pricing">
       <div class="l-wrap">
         <div class="l-kicker">07 — Pricing</div>
-        <h2 data-i18n="nav.pricing">Цены</h2>
+        <h2 data-i18n="nav.pricing">Narxlar</h2>
         <div class="l-pricing l-pricing-atlas">
-          <p data-i18n="pricing.text">Стоимость зависит от размера команды и набора модулей — как плов: на двоих и на свадьбу готовят по-разному. Войдите, чтобы попробовать, — условия подберём индивидуально.</p>
-          <button type="button" class="l-btn" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+          <p data-i18n="pricing.text">Narx jamoa hajmi va modullarga bog‘liq — palovdek: ikki kishiga va to‘yga boshqacha damlanadi. Sinab ko‘rish uchun kiring — shartlarni alohida kelishamiz.</p>
+          <button type="button" class="l-btn" data-enter><span data-i18n="nav.login">Kirish</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
         </div>
       </div>
     </section>
@@ -1043,17 +1050,17 @@
       <div class="l-wrap l-faq-wrap">
         <div>
           <div class="l-kicker">08 — FAQ</div>
-          <h2 data-i18n="faq.title">Частые вопросы</h2>
-          <p class="l-lead l-faq-side" data-i18n="faq.side">Не нашли ответ? Загляните в блог или просто попробуйте сервис — это быстрее любого объяснения.</p>
-          <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="nav.login">Войти</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+          <h2 data-i18n="faq.title">Ko‘p so‘raladigan savollar</h2>
+          <p class="l-lead l-faq-side" data-i18n="faq.side">Javob topmadingizmi? Blogga qarang yoki xizmatni sinab ko‘ring — bu har qanday tushuntirishdan tezroq.</p>
+          <button type="button" class="l-btn l-btn-primary" data-enter><span data-i18n="nav.login">Kirish</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
         </div>
         <div class="l-faq">
-          <details class="l-faq-item"><summary data-i18n="faq.q1">Что такое KPI-калькулятор?</summary><p data-i18n="faq.a1">Это сервис, который по плану и факту считает процент выполнения каждого показателя, итоговый KPI, буквенную оценку и премию сотрудника.</p></details>
-          <details class="l-faq-item"><summary data-i18n="faq.q2">Как считается итоговый KPI?</summary><p data-i18n="faq.a2">Для каждого показателя считается процент выполнения между минимумом и нормативом, умножается на вес — и вклады складываются в итоговый KPI. Как плов: у каждого ингредиента своя доля, а вкус — общий.</p></details>
-          <details class="l-faq-item"><summary data-i18n="faq.q3">Можно ли изменить оценки A–F и их пороги?</summary><p data-i18n="faq.a3">Да. В «Настройках KPI» можно менять пороги, добавлять и удалять оценки. Хотите, чтобы «A» получали только герои, — поднимите планку.</p></details>
-          <details class="l-faq-item"><summary data-i18n="faq.q4">Можно ли изменить ставку налога?</summary><p data-i18n="faq.a4">Да. Ставка задаётся в «Настройках KPI» — например, 7,5% или 12%. Каждый расчёт запоминает ставку, по которой был сделан.</p></details>
-          <details class="l-faq-item"><summary data-i18n="faq.q5">Можно ли загрузить данные из Excel?</summary><p data-i18n="faq.a5">Да. Поддерживаются файлы .xlsx, .xls и .csv — и цели (показатели), и факты по сотрудникам.</p></details>
-          <details class="l-faq-item"><summary data-i18n="faq.q6">Кто видит данные моей компании?</summary><p data-i18n="faq.a6">Только пользователи с доступом. Роли и права проверяются на сервере, а не только в интерфейсе.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q1">KPI-kalkulyator nima?</summary><p data-i18n="faq.a1">Bu reja va fakt bo‘yicha har bir ko‘rsatkichning bajarilish foizini, yakuniy KPI, harfli baho va xodim mukofotini hisoblaydigan xizmat.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q2">Yakuniy KPI qanday hisoblanadi?</summary><p data-i18n="faq.a2">Har bir ko‘rsatkich uchun minimum va norma orasidagi bajarilish foizi hisoblanadi, vaznga ko‘paytiriladi — hissalar yig‘indisi yakuniy KPI bo‘ladi. Palovga o‘xshaydi: har bir masalliqning o‘z ulushi, ta’mi esa umumiy.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q3">A–F baholari va ularning chegaralarini o‘zgartirsa bo‘ladimi?</summary><p data-i18n="faq.a3">Ha. «KPI sozlamalari»da chegaralarni o‘zgartirish, baholarni qo‘shish va o‘chirish mumkin. «A» faqat qahramonlarga berilsin desangiz — chegarani ko‘taring.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q4">Soliq stavkasini o‘zgartirsa bo‘ladimi?</summary><p data-i18n="faq.a4">Ha. Stavka «KPI sozlamalari»da belgilanadi — masalan, 7,5% yoki 12%. Har bir hisob qaysi stavka bo‘yicha qilinganini eslab qoladi.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q5">Ma’lumotlarni Excel’dan yuklasa bo‘ladimi?</summary><p data-i18n="faq.a5">Ha. .xlsx, .xls va .csv fayllari qo‘llab-quvvatlanadi — maqsadlar ham, xodimlar bo‘yicha faktlar ham.</p></details>
+          <details class="l-faq-item"><summary data-i18n="faq.q6">Kompaniyam ma’lumotlarini kim ko‘radi?</summary><p data-i18n="faq.a6">Faqat ruxsati bor foydalanuvchilar. Rollar va huquqlar faqat interfeysda emas, serverda tekshiriladi.</p></details>
         </div>
       </div>
     </section>
@@ -1061,11 +1068,11 @@
     <section class="l-section" id="blog">
       <div class="l-wrap">
         <div class="l-kicker">09 — Blog</div>
-        <h2 data-i18n="blog.title">Блог</h2>
+        <h2 data-i18n="blog.title">Blog</h2>
         <div class="l-posts">
-          <article class="l-post"><span class="l-post-tag">Unoom · KPI</span><h3 data-i18n="blog.t1">KPI простыми словами</h3><details><summary data-i18n="blog.read">Читать</summary><p data-i18n="blog.p1">KPI — это число, по которому видно, насколько сотрудник выполнил план. Пример: продавец Азиз обещал 100 продаж, а сделал 90 — выполнение 90%. Если ещё и клиенты довольны, Азиз получает хорошую оценку, а не только хорошее настроение.</p></details></article>
-          <article class="l-post"><span class="l-post-tag">Unoom · Tips</span><h3 data-i18n="blog.t2">Как выбрать веса показателей</h3><details><summary data-i18n="blog.read">Читать</summary><p data-i18n="blog.p2">Вес — это сколько «стоит» показатель. Как в плове: рис — 50%, мясо — 30%, морковь — 20%, зира — по вкусу. Главному результату дайте 40–50%, качеству — 25–35%, остальному — по 10–15%. Больше 5–6 показателей — и вы уже готовите не плов, а винегрет.</p></details></article>
-          <article class="l-post"><span class="l-post-tag">Unoom · Tips</span><h3 data-i18n="blog.t3">5 ошибок при расчёте премии</h3><details><summary data-i18n="blog.read">Читать</summary><p data-i18n="blog.p3">1) Формулы в пяти файлах «итог_финал_2». 2) Веса в сумме дают 117% — щедро, но неверно. 3) Нет минимального порога — премию получает даже тот, кто весь месяц «работал из дома» в чайхане. 4) Сотрудник не видит, из чего сложилась премия, и идёт выяснять. 5) Нет истории — никто не помнит март. Unoom закрывает все пять.</p></details></article>
+          <article class="l-post"><span class="l-post-tag">Unoom · KPI</span><h3 data-i18n="blog.t1">KPI oddiy so‘zlar bilan</h3><details><summary data-i18n="blog.read">O‘qish</summary><p data-i18n="blog.p1">KPI — xodim rejani qanchalik bajarganini ko‘rsatadigan son. Misol: sotuvchi Aziz 100 ta savdo va’da qildi, 90 tasini qildi — bajarilish 90%. Mijozlar ham mamnun bo‘lsa, Aziz faqat yaxshi kayfiyat emas, yaxshi baho ham oladi.</p></details></article>
+          <article class="l-post"><span class="l-post-tag">Unoom · Tips</span><h3 data-i18n="blog.t2">Ko‘rsatkich vaznlarini qanday tanlash</h3><details><summary data-i18n="blog.read">O‘qish</summary><p data-i18n="blog.p2">Vazn — ko‘rsatkichning «qiymati». Palovdagidek: guruch — 50%, go‘sht — 30%, sabzi — 20%, zira — ta’bga ko‘ra. Asosiy natijaga 40–50%, sifatga 25–35%, qolganlariga 10–15% bering. 5–6 tadan ortiq ko‘rsatkich — va siz endi palov emas, vinegret pishiryapsiz.</p></details></article>
+          <article class="l-post"><span class="l-post-tag">Unoom · Tips</span><h3 data-i18n="blog.t3">Mukofot hisobidagi 5 xato</h3><details><summary data-i18n="blog.read">O‘qish</summary><p data-i18n="blog.p3">1) Beshta «yakuniy_2» faylidagi formulalar. 2) Vaznlar yig‘indisi 117% — saxiy, lekin noto‘g‘ri. 3) Minimal chegara yo‘q — oy bo‘yi choyxonada «uydan ishlagan» xodim ham mukofot oladi. 4) Xodim mukofoti nimadan iboratligini ko‘rmaydi va aniqlashga boradi. 5) Tarix yo‘q — martni hech kim eslamaydi. Unoom beshalasini hal qiladi.</p></details></article>
         </div>
       </div>
     </section>
@@ -1074,27 +1081,27 @@
       <div class="l-wrap l-contact">
         <div>
           <div class="l-kicker">10 — Contact</div>
-          <h2 data-i18n="ct.title">Напишите нам</h2>
-          <p class="l-lead l-contact-lead" data-i18n="ct.lead">Вопрос, идея, жалоба или нашли ошибку? Заполните форму — сообщение придёт нам на почту, ответим на ваш email.</p>
+          <h2 data-i18n="ct.title">Bizga yozing</h2>
+          <p class="l-lead l-contact-lead" data-i18n="ct.lead">Savol, g‘oya, shikoyat yoki xato topdingizmi? Formani to‘ldiring — xabar pochtamizga keladi, javobni emailingizga yozamiz.</p>
         </div>
         <form class="l-form" id="contact-form" novalidate>
           <div class="l-form-row">
-            <label><span data-i18n="ct.name">Ваше имя</span><input name="name" type="text" autocomplete="name" maxlength="100" required></label>
+            <label><span data-i18n="ct.name">Ismingiz</span><input name="name" type="text" autocomplete="name" maxlength="100" required></label>
             <label><span data-i18n="ct.email">Email</span><input name="email" type="email" autocomplete="email" maxlength="150" required></label>
           </div>
-          <label><span data-i18n="ct.cat">Тема</span>
+          <label><span data-i18n="ct.cat">Mavzu</span>
             <select name="category">
-              <option value="question" data-i18n="ct.c1">Вопрос</option>
-              <option value="idea" data-i18n="ct.c2">Идея</option>
-              <option value="complaint" data-i18n="ct.c3">Жалоба</option>
-              <option value="bug" data-i18n="ct.c4">Ошибка на сайте</option>
-              <option value="other" data-i18n="ct.c5">Другое</option>
+              <option value="question" data-i18n="ct.c1">Savol</option>
+              <option value="idea" data-i18n="ct.c2">G‘oya</option>
+              <option value="complaint" data-i18n="ct.c3">Shikoyat</option>
+              <option value="bug" data-i18n="ct.c4">Saytdagi xato</option>
+              <option value="other" data-i18n="ct.c5">Boshqa</option>
             </select>
           </label>
-          <label><span data-i18n="ct.msg">Сообщение</span><textarea name="message" rows="6" maxlength="3000" required></textarea></label>
+          <label><span data-i18n="ct.msg">Xabar</span><textarea name="message" rows="6" maxlength="3000" required></textarea></label>
           <input type="text" name="_honey" class="l-honey" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div class="l-form-foot">
-            <button type="submit" class="l-btn l-btn-primary"><span data-i18n="ct.send">Отправить</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
+            <button type="submit" class="l-btn l-btn-primary"><span data-i18n="ct.send">Yuborish</span><svg class="l-icon"><use href="#i-arrow"/></svg></button>
             <p class="l-form-status" id="contact-status" role="status" aria-live="polite"></p>
           </div>
         </form>
@@ -1105,15 +1112,15 @@
       <div class="l-wrap">
         <div class="l-ask-box l-top-atlas">
           <svg class="l-hat" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi"/></svg>
-          <h2 data-i18n="ask.title">Если у вас есть вопросы — оставайтесь здесь</h2>
-          <p data-i18n="ask.lead">Короткие ответы, полезные статьи и немного юмора — KPI не обязан быть скучным.</p>
+          <h2 data-i18n="ask.title">Savollaringiz bo‘lsa — shu yerda qoling</h2>
+          <p data-i18n="ask.lead">Qisqa javoblar, foydali maqolalar va ozgina hazil — KPI zerikarli bo‘lishi shart emas.</p>
           <nav class="l-ask-links">
-          <a href="#why"><span data-i18n="ask.why">Зачем это нужно</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
-          <a href="#how"><span data-i18n="ask.how">Как это работает</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
-          <a href="#reports"><span data-i18n="ask.reports">Отчёты</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
-          <a href="#faq"><span data-i18n="ask.faq">Частые вопросы</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
-          <a href="#blog"><span data-i18n="ask.blog">Блог</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
-          <a href="#contact"><span data-i18n="ask.contact">Написать нам</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#why"><span data-i18n="ask.why">Nima uchun</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#how"><span data-i18n="ask.how">Qanday ishlaydi</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#reports"><span data-i18n="ask.reports">Hisobotlar</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#faq"><span data-i18n="ask.faq">Savol-javob</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#blog"><span data-i18n="ask.blog">Blog</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
+          <a href="#contact"><span data-i18n="ask.contact">Bizga yozish</span><svg class="l-icon"><use href="#i-arrow"/></svg></a>
           </nav>
         </div>
       </div>
@@ -1122,7 +1129,7 @@
 
   <footer class="l-footer">
     <div class="l-atlas" aria-hidden="true"></div>
-    <div class="l-wrap"><span class="l-made"><svg class="l-doppi-icon" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi-top"/></svg>© Unoom · <span data-i18n="footer.made">Сделано с любовью в Узбекистане</span></span><span data-i18n="footer">Эффективность, понятная каждому.</span></div>
+    <div class="l-wrap"><span class="l-made"><svg class="l-doppi-icon" viewBox="0 0 200 150" aria-hidden="true"><use href="#i-doppi-top"/></svg>© Unoom · <span data-i18n="footer.made">O‘zbekistonda mehr bilan yaratilgan</span></span><span data-i18n="footer">Har kim tushunadigan samaradorlik.</span></div>
   </footer>
 </div>
 
@@ -1194,6 +1201,12 @@
   Object.assign(I18N.ru, {"hero.chip": "Сделано с любовью в Узбекистане", "viz.kicker": "Unoom / Весёлая математика", "viz.sub": "Считаем, улыбаемся, растём.", "gif.label": "Анимации про KPI", "gif.series": "Unoom · KPI-гифки", "gif.calc": "Калькулятор в доппи считает премию", "gif.calcSub": "Хоп — и 94.8% готово. Без Excel и бессонных ночей.", "gif.pct": "Перевыполнение плана!", "gif.pctSub": "Факт выше плана — и выполнение больше 100%. Сильная сторона компенсирует слабую.", "gif.formula": "Вес × выполнение = вклад", "gif.formulaSub": "36 + 35 + 18 = KPI 89%. Никакой магии — только честная математика.", "gif.react": "Реакция на KPI", "gif.reactSub": "Руководитель открывает отчёт: «Отлично!»", "nav.calc": "Калькулятор", "num.title": "KPI в цифрах — понятно с первого взгляда", "num.s1": "От данных до премии", "num.s1d": "Добавили сотрудников, задали KPI, нажали кнопку — готово раньше, чем остынет чай в пиале.", "num.s2": "Налог учтён", "num.s2d": "Сотрудник сразу видит сумму «на руки» — никаких сюрпризов в день зарплаты. Ставку можно поменять под вашу компанию.", "num.s3": "Понятных оценок", "num.s3d": "«Ты молодец на 87,3%» звучит как диагноз. «У тебя B» — понятно с первого взгляда. Шкалу можно настроить под себя.", "num.s4": "«А почему у него больше?»", "num.s4d": "Формула открыта для всех — вопрос закрывается раньше, чем его успели задать у кулера.", "num.avg": "средний KPI", "num.demo": "Как выглядит команда из 12 человек", "num.demoNote": "Демо-пример распределения оценок за месяц", "footer.made": "Сделано с любовью в Узбекистане", "calc.title": "Калькулятор", "calc.lead": "Обычный калькулятор — нажимайте кнопки или пользуйтесь клавиатурой.", "calc.note": "Чтобы настроить KPI и рассчитывать премии сотрудников, нужно войти.", "calc.err": "Ошибка", "gif.money": "Премия посчитана — пора считать купюры", "gif.moneySub": "Unoom считает KPI, а купюры вы уже сами.", "nav.faq": "Частые вопросы", "hero.check1": "Своя шкала оценок", "num.steps": "шага", "why.title": "Что такое KPI-калькулятор", "why.lead": "Коротко о том, что это, зачем это нужно и что вы получаете.", "why.q1": "Что это", "why.a1": "Представьте честного бухгалтера, который не устаёт, не путается в Excel и не уходит в отпуск в конце месяца. Вы вносите план и факт — он выдаёт процент, оценку и премию.", "why.q2": "Зачем он нужен", "why.a2": "Помните, как в конце месяца весь офис ищет ячейку, где «съехала» формула? А Дилшод уверен, что его премию считали «на глаз». Теперь — минуты вместо дней и ни одного «на глаз».", "why.q3": "Что мы даём", "why.a3": "<li>Настройку показателей, весов и оценок под вашу компанию</li><li>Импорт целей и фактов из Excel/CSV</li><li>Расчёт KPI, оценки и премии с учётом налога</li><li>Историю расчётов и отчёты в Excel</li><li>Роли и права доступа для команды</li>", "why.q4": "Какие проблемы решает", "why.a4": "<li>Ночные посиделки с Excel в конце месяца</li><li>Формула «съехала» — премия уехала</li><li>«А почему у него больше?» у кулера</li><li>Пять файлов «итог_финал_точно_финал.xlsx»</li><li>Никто не помнит, каким был март</li>", "rep.title": "Отчёты", "rep.lead": "Все расчёты сохраняются — их можно открыть в любой момент и выгрузить в Excel.", "rep.t1": "Карточка сотрудника", "rep.d1": "Вся картина сотрудника в одном Excel — хоть распечатай и повесь на холодильник.", "rep.t2": "История расчётов", "rep.d2": "Все месяцы в одном списке. Март больше не потеряется.", "rep.t3": "Результат импорта", "rep.d3": "Загрузили Excel на 50 человек — сводка готова раньше, чем все успели налить чай.", "rep.t4": "Пульс команды", "rep.d4": "Средний KPI, звезда месяца в доппи и тот, кому нужна поддержка.", "faq.title": "Частые вопросы", "faq.q1": "Что такое KPI-калькулятор?", "faq.a1": "Это сервис, который по плану и факту считает процент выполнения каждого показателя, итоговый KPI, буквенную оценку и премию сотрудника.", "faq.q2": "Как считается итоговый KPI?", "faq.a2": "Для каждого показателя считается процент выполнения между минимумом и нормативом, умножается на вес — и вклады складываются в итоговый KPI. Как плов: у каждого ингредиента своя доля, а вкус — общий.", "faq.q3": "Можно ли изменить оценки A–F и их пороги?", "faq.a3": "Да. В «Настройках KPI» можно менять пороги, добавлять и удалять оценки. Хотите, чтобы «A» получали только герои, — поднимите планку.", "faq.q4": "Можно ли изменить ставку налога?", "faq.a4": "Да. Ставка задаётся в «Настройках KPI» — например, 7,5% или 12%. Каждый расчёт запоминает ставку, по которой был сделан.", "faq.q5": "Можно ли загрузить данные из Excel?", "faq.a5": "Да. Поддерживаются файлы .xlsx, .xls и .csv — и цели (показатели), и факты по сотрудникам.", "faq.q6": "Кто видит данные моей компании?", "faq.a6": "Только пользователи с доступом. Роли и права проверяются на сервере, а не только в интерфейсе.", "blog.title": "Блог", "blog.read": "Читать", "blog.t1": "KPI простыми словами", "blog.p1": "KPI — это число, по которому видно, насколько сотрудник выполнил план. Пример: продавец Азиз обещал 100 продаж, а сделал 90 — выполнение 90%. Если ещё и клиенты довольны, Азиз получает хорошую оценку, а не только хорошее настроение.", "blog.t2": "Как выбрать веса показателей", "blog.p2": "Вес — это сколько «стоит» показатель. Как в плове: рис — 50%, мясо — 30%, морковь — 20%, зира — по вкусу. Главному результату дайте 40–50%, качеству — 25–35%, остальному — по 10–15%. Больше 5–6 показателей — и вы уже готовите не плов, а винегрет.", "blog.t3": "5 ошибок при расчёте премии", "blog.p3": "1) Формулы в пяти файлах «итог_финал_2». 2) Веса в сумме дают 117% — щедро, но неверно. 3) Нет минимального порога — премию получает даже тот, кто весь месяц «работал из дома» в чайхане. 4) Сотрудник не видит, из чего сложилась премия, и идёт выяснять. 5) Нет истории — никто не помнит март. Unoom закрывает все пять.", "ask.title": "Если у вас есть вопросы — оставайтесь здесь", "ask.lead": "Короткие ответы, полезные статьи и немного юмора — KPI не обязан быть скучным.", "ask.why": "Зачем это нужно", "ask.how": "Как это работает", "ask.reports": "Отчёты", "ask.faq": "Частые вопросы", "ask.blog": "Блог", "faq.side": "Не нашли ответ? Загляните в блог или просто попробуйте сервис — это быстрее любого объяснения.", "ask.contact": "Написать нам", "ct.title": "Напишите нам", "ct.lead": "Вопрос, идея, жалоба или нашли ошибку? Заполните форму — сообщение придёт нам на почту, ответим на ваш email.", "ct.name": "Ваше имя", "ct.email": "Email", "ct.cat": "Тема", "ct.c1": "Вопрос", "ct.c2": "Идея", "ct.c3": "Жалоба", "ct.c4": "Ошибка на сайте", "ct.c5": "Другое", "ct.msg": "Сообщение", "ct.send": "Отправить", "ct.sending": "Отправляем…", "ct.ok": "Спасибо! Сообщение отправлено — мы ответим на ваш email.", "ct.err": "Не удалось отправить через форму. Нажмите кнопку ниже — откроется почта с уже готовым письмом.", "ct.invalid": "Заполните имя, корректный email и сообщение.", "num.args": "споров", "s1.desc": "Вся команда в одном месте — больше никаких списков на салфетке из чайханы.", "s2.desc": "Решите, что важнее: продажи или вежливость с клиентами. Можно и то, и другое — веса поделят честно.", "s3.desc": "Итог и премия — за секунду. Остаётся только сказать «Отлично!».", "f1.desc": "Формула прозрачная, как утреннее небо над Чимганом: каждый видит, из чего сложился его результат.", "f2.desc": "Загрузили файл — и забыли про «Ctrl+C, Ctrl+V» до самого Навруза.", "f3.desc": "Каждый видит свой результат: сотрудник радуется высокому KPI и начинает пересчитывать деньги, руководитель радуется за свою команду, а соседи — пусть завидуют 😜", "pricing.text": "Стоимость зависит от размера команды и набора модулей — как плов: на двоих и на свадьбу готовят по-разному. Войдите, чтобы попробовать, — условия подберём индивидуально.", "ct.pending": "Форма почти готова: владельцу сайта нужно один раз подтвердить её в письме. Пока что отправьте сообщение через почту — кнопка ниже.", "ct.mailbtn": "Отправить через почту"});
   Object.assign(I18N.uz, {"hero.chip": "O‘zbekistonda mehr bilan yaratilgan", "viz.kicker": "Unoom / Quvnoq matematika", "viz.sub": "Hisoblaymiz, jilmayamiz, o‘samiz.", "gif.label": "KPI haqida animatsiyalar", "gif.series": "Unoom · KPI-giflar", "gif.calc": "Do‘ppili kalkulyator mukofotni hisoblaydi", "gif.calcSub": "Bir zumda — 94.8% tayyor. Excel va uyqusiz tunlarsiz.", "gif.pct": "Reja oshirib bajarildi!", "gif.pctSub": "Fakt rejadan yuqori — bajarilish 100% dan oshadi. Kuchli tomon zaifini qoplaydi.", "gif.formula": "Vazn × bajarilish = hissa", "gif.formulaSub": "36 + 35 + 18 = KPI 89%. Sehr yo‘q — faqat halol matematika.", "gif.react": "KPI ga munosabat", "gif.reactSub": "Rahbar hisobotni ochadi: «Barakalla!»", "nav.calc": "Kalkulyator", "num.title": "Raqamlarda KPI — bir qarashda tushunarli", "num.s1": "Ma’lumotdan mukofotgacha", "num.s1d": "Xodimlarni qo‘shdingiz, KPI ni sozladingiz, tugmani bosdingiz — piyoladagi choy sovumasdan tayyor.", "num.s2": "Soliq hisobga olingan", "num.s2d": "Xodim qo‘lga tegadigan summani darhol ko‘radi — oylik kuni hech qanday «syurpriz» yo‘q. Stavkani kompaniyangizga moslab o‘zgartirish mumkin.", "num.s3": "Tushunarli baho", "num.s3d": "«Siz 87,3% ga zo‘rsiz» — tashxisga o‘xshaydi. «Sizda B» — bir qarashda tushunarli. Shkalani o‘zingizga moslash mumkin.", "num.s4": "«Nega unda ko‘proq?»", "num.s4d": "Formula hammaga ochiq — savol kuler oldida berilishidan oldin yopiladi.", "num.avg": "o‘rtacha KPI", "num.demo": "12 kishilik jamoa qanday ko‘rinadi", "num.demoNote": "Oy bo‘yicha baholar taqsimotining demo namunasi", "footer.made": "O‘zbekistonda mehr bilan yaratilgan", "calc.title": "Kalkulyator", "calc.lead": "Oddiy kalkulyator — tugmalarni bosing yoki klaviaturadan foydalaning.", "calc.note": "KPI ni sozlash va xodimlar mukofotini hisoblash uchun tizimga kiring.", "calc.err": "Xato", "gif.money": "Mukofot hisoblandi — endi pullarni sanash vaqti", "gif.moneySub": "Unoom KPI ni hisoblaydi, pullarni esa o‘zingiz sanaysiz.", "nav.faq": "Savol-javob", "hero.check1": "O‘z baholash shkalangiz", "num.steps": "qadam", "why.title": "KPI-kalkulyator nima", "why.lead": "Bu nima, nima uchun kerak va siz nimaga ega bo‘lasiz — qisqacha.", "why.q1": "Bu nima", "why.a1": "Charchamaydigan, Excel’da adashmaydigan va oy oxirida ta’tilga chiqmaydigan halol buxgalterni tasavvur qiling. Siz reja va faktni kiritasiz — u foiz, baho va mukofotni beradi.", "why.q2": "Nima uchun kerak", "why.a2": "Oy oxirida butun ofis formula «siljib ketgan» katakni qidirganini eslaysizmi? Dilshod esa mukofotini «ko‘z chama» hisoblashgan deb o‘ylaydi. Endi — kunlar o‘rniga daqiqalar va hech qanday «ko‘z chamasiz».", "why.q3": "Biz nima beramiz", "why.a3": "<li>Ko‘rsatkichlar, vaznlar va baholarni kompaniyangizga moslash</li><li>Maqsad va faktlarni Excel/CSV’dan import qilish</li><li>Soliqni hisobga olgan holda KPI, baho va mukofot hisobi</li><li>Hisoblar tarixi va Excel hisobotlari</li><li>Jamoa uchun rollar va kirish huquqlari</li>", "why.q4": "Qaysi muammolarni hal qiladi", "why.a4": "<li>Oy oxirida Excel bilan tungi o‘tirishlar</li><li>Formula «siljidi» — mukofot ham ketdi</li><li>Kuler oldida «Nega unda ko‘proq?»</li><li>Beshta «yakuniy_aniq_yakuniy.xlsx» fayli</li><li>Mart qanday o‘tganini hech kim eslamaydi</li>", "rep.title": "Hisobotlar", "rep.lead": "Barcha hisoblar saqlanadi — ularni istalgan vaqtda ochib, Excel’ga yuklab olish mumkin.", "rep.t1": "Xodim kartasi", "rep.d1": "Xodimning butun manzarasi bitta Excel’da — xohlasangiz chop etib, muzlatgichga iling.", "rep.t2": "Hisoblar tarixi", "rep.d2": "Barcha oylar bitta ro‘yxatda. Mart endi yo‘qolmaydi.", "rep.t3": "Import natijasi", "rep.d3": "50 kishilik Excel’ni yukladingiz — hamma choy quyib ulgurmasidan xulosa tayyor.", "rep.t4": "Jamoa pulsi", "rep.d4": "O‘rtacha KPI, do‘ppi kiygan oy yulduzi va yordamga muhtoj xodim.", "faq.title": "Ko‘p so‘raladigan savollar", "faq.q1": "KPI-kalkulyator nima?", "faq.a1": "Bu reja va fakt bo‘yicha har bir ko‘rsatkichning bajarilish foizini, yakuniy KPI, harfli baho va xodim mukofotini hisoblaydigan xizmat.", "faq.q2": "Yakuniy KPI qanday hisoblanadi?", "faq.a2": "Har bir ko‘rsatkich uchun minimum va norma orasidagi bajarilish foizi hisoblanadi, vaznga ko‘paytiriladi — hissalar yig‘indisi yakuniy KPI bo‘ladi. Palovga o‘xshaydi: har bir masalliqning o‘z ulushi, ta’mi esa umumiy.", "faq.q3": "A–F baholari va ularning chegaralarini o‘zgartirsa bo‘ladimi?", "faq.a3": "Ha. «KPI sozlamalari»da chegaralarni o‘zgartirish, baholarni qo‘shish va o‘chirish mumkin. «A» faqat qahramonlarga berilsin desangiz — chegarani ko‘taring.", "faq.q4": "Soliq stavkasini o‘zgartirsa bo‘ladimi?", "faq.a4": "Ha. Stavka «KPI sozlamalari»da belgilanadi — masalan, 7,5% yoki 12%. Har bir hisob qaysi stavka bo‘yicha qilinganini eslab qoladi.", "faq.q5": "Ma’lumotlarni Excel’dan yuklasa bo‘ladimi?", "faq.a5": "Ha. .xlsx, .xls va .csv fayllari qo‘llab-quvvatlanadi — maqsadlar ham, xodimlar bo‘yicha faktlar ham.", "faq.q6": "Kompaniyam ma’lumotlarini kim ko‘radi?", "faq.a6": "Faqat ruxsati bor foydalanuvchilar. Rollar va huquqlar faqat interfeysda emas, serverda tekshiriladi.", "blog.title": "Blog", "blog.read": "O‘qish", "blog.t1": "KPI oddiy so‘zlar bilan", "blog.p1": "KPI — xodim rejani qanchalik bajarganini ko‘rsatadigan son. Misol: sotuvchi Aziz 100 ta savdo va’da qildi, 90 tasini qildi — bajarilish 90%. Mijozlar ham mamnun bo‘lsa, Aziz faqat yaxshi kayfiyat emas, yaxshi baho ham oladi.", "blog.t2": "Ko‘rsatkich vaznlarini qanday tanlash", "blog.p2": "Vazn — ko‘rsatkichning «qiymati». Palovdagidek: guruch — 50%, go‘sht — 30%, sabzi — 20%, zira — ta’bga ko‘ra. Asosiy natijaga 40–50%, sifatga 25–35%, qolganlariga 10–15% bering. 5–6 tadan ortiq ko‘rsatkich — va siz endi palov emas, vinegret pishiryapsiz.", "blog.t3": "Mukofot hisobidagi 5 xato", "blog.p3": "1) Beshta «yakuniy_2» faylidagi formulalar. 2) Vaznlar yig‘indisi 117% — saxiy, lekin noto‘g‘ri. 3) Minimal chegara yo‘q — oy bo‘yi choyxonada «uydan ishlagan» xodim ham mukofot oladi. 4) Xodim mukofoti nimadan iboratligini ko‘rmaydi va aniqlashga boradi. 5) Tarix yo‘q — martni hech kim eslamaydi. Unoom beshalasini hal qiladi.", "ask.title": "Savollaringiz bo‘lsa — shu yerda qoling", "ask.lead": "Qisqa javoblar, foydali maqolalar va ozgina hazil — KPI zerikarli bo‘lishi shart emas.", "ask.why": "Nima uchun", "ask.how": "Qanday ishlaydi", "ask.reports": "Hisobotlar", "ask.faq": "Savol-javob", "ask.blog": "Blog", "faq.side": "Javob topmadingizmi? Blogga qarang yoki xizmatni sinab ko‘ring — bu har qanday tushuntirishdan tezroq.", "ask.contact": "Bizga yozish", "ct.title": "Bizga yozing", "ct.lead": "Savol, g‘oya, shikoyat yoki xato topdingizmi? Formani to‘ldiring — xabar pochtamizga keladi, javobni emailingizga yozamiz.", "ct.name": "Ismingiz", "ct.email": "Email", "ct.cat": "Mavzu", "ct.c1": "Savol", "ct.c2": "G‘oya", "ct.c3": "Shikoyat", "ct.c4": "Saytdagi xato", "ct.c5": "Boshqa", "ct.msg": "Xabar", "ct.send": "Yuborish", "ct.sending": "Yuborilmoqda…", "ct.ok": "Rahmat! Xabar yuborildi — emailingizga javob beramiz.", "ct.err": "Forma orqali yuborib bo‘lmadi. Pastdagi tugmani bosing — tayyor xat bilan pochta ochiladi.", "ct.invalid": "Ism, to‘g‘ri email va xabarni to‘ldiring.", "num.args": "bahs", "s1.desc": "Butun jamoa bir joyda — endi choyxonadagi salfetkaga yozilgan ro‘yxatlar yo‘q.", "s2.desc": "Nima muhimroq — savdomi yoki mijozlarga xushmuomalalikmi — o‘zingiz hal qiling. Ikkalasi ham bo‘ladi — vaznlar halol bo‘lib beradi.", "s3.desc": "Yakun va mukofot — bir soniyada. Faqat «Barakalla!» deyish qoladi.", "f1.desc": "Formula Chimyon ustidagi tonggi osmondek tiniq: har kim natijasi nimadan iboratligini ko‘radi.", "f2.desc": "Faylni yukladingiz — Navro‘zgacha «Ctrl+C, Ctrl+V»ni unuting.", "f3.desc": "Har kim o‘z natijasini o‘zi ko‘radi: xodim natijasi yuqoriligidan quvonib, pullarni sanashga tushadi, rahbar esa xodimlarini ko‘rib quvonadi. Qo‘shnilar esa — alam qilsin 😜", "pricing.text": "Narx jamoa hajmi va modullarga bog‘liq — palovdek: ikki kishiga va to‘yga boshqacha damlanadi. Sinab ko‘rish uchun kiring — shartlarni alohida kelishamiz.", "ct.pending": "Forma deyarli tayyor: sayt egasi uni bir marta xatda tasdiqlashi kerak. Hozircha xabarni pochta orqali yuboring — tugma pastda.", "ct.mailbtn": "Pochta orqali yuborish"});
   Object.assign(I18N.en, {"hero.chip": "Made with love in Uzbekistan", "viz.kicker": "Unoom / Fun maths", "viz.sub": "We count, we smile, we grow.", "gif.label": "KPI animations", "gif.series": "Unoom · KPI GIFs", "gif.calc": "A calculator in a doppi works out the bonus", "gif.calcSub": "Poof — 94.8% done. No Excel, no sleepless nights.", "gif.pct": "Plan overachieved!", "gif.pctSub": "Actual beats plan — completion goes above 100%. A strong side makes up for a weak one.", "gif.formula": "Weight × completion = contribution", "gif.formulaSub": "36 + 35 + 18 = KPI 89%. No magic — just honest maths.", "gif.react": "Reacting to the KPI", "gif.reactSub": "The manager opens the report: “Excellent!”", "nav.calc": "Calculator", "num.title": "KPI in numbers — clear at a glance", "num.s1": "From data to bonus", "num.s1d": "Add people, set KPIs, press the button — done before the tea in your piala cools down.", "num.s2": "Tax included", "num.s2d": "Everyone sees their take-home pay up front — no payday surprises. Change the rate to fit your company.", "num.s3": "Clear grades", "num.s3d": "“You’re 87.3% great” sounds like a diagnosis. “You got a B” is clear at a glance. Tune the scale to your taste.", "num.s4": "“Why did he get more?”", "num.s4d": "The formula is open to everyone — the question is closed before it reaches the water cooler.", "num.avg": "average KPI", "num.demo": "What a team of 12 looks like", "num.demoNote": "Demo example of a monthly grade distribution", "footer.made": "Made with love in Uzbekistan", "calc.title": "Calculator", "calc.lead": "A regular calculator — tap the buttons or use your keyboard.", "calc.note": "Log in to set up KPIs and calculate employee bonuses.", "calc.err": "Error", "gif.money": "Bonus calculated — time to count the cash", "gif.moneySub": "Unoom does the KPI maths, you count the bills.", "nav.faq": "FAQ", "hero.check1": "Your own grading scale", "num.steps": "steps", "why.title": "What is a KPI calculator", "why.lead": "In short: what it is, why you need it and what you get.", "why.q1": "What it is", "why.a1": "Picture an honest accountant who never gets tired, never gets lost in Excel and never takes a holiday at month-end. You enter plan and actuals — it returns a percentage, a grade and a bonus.", "why.q2": "Why you need it", "why.a2": "Remember month-end, when the whole office hunts for the cell where the formula “slipped”? And Dilshod is sure his bonus was eyeballed. Now it’s minutes instead of days — and zero eyeballing.", "why.q3": "What we give you", "why.a3": "<li>Metrics, weights and grades tailored to your company</li><li>Import of goals and actuals from Excel/CSV</li><li>KPI, grade and bonus calculation including tax</li><li>Calculation history and Excel reports</li><li>Roles and access rights for the team</li>", "why.q4": "Problems it solves", "why.a4": "<li>Late nights with Excel at month-end</li><li>The formula slipped — and the bonus slipped with it</li><li>“Why did he get more?” at the water cooler</li><li>Five files named “total_final_REALLY_final.xlsx”</li><li>Nobody remembers what March looked like</li>", "rep.title": "Reports", "rep.lead": "Every calculation is saved — open it any time and export it to Excel.", "rep.t1": "Employee card", "rep.d1": "An employee’s whole picture in one Excel file — print it and stick it on the fridge.", "rep.t2": "Calculation history", "rep.d2": "Every month in one list. March won’t go missing again.", "rep.t3": "Import result", "rep.d3": "Upload Excel for 50 people — the summary is ready before everyone pours their tea.", "rep.t4": "Team pulse", "rep.d4": "Average KPI, the star of the month in a doppi, and who needs support.", "faq.title": "Frequently asked questions", "faq.q1": "What is a KPI calculator?", "faq.a1": "It’s a service that uses plan and actuals to calculate each metric’s completion, the overall KPI, a letter grade and the employee’s bonus.", "faq.q2": "How is the overall KPI calculated?", "faq.a2": "Each metric’s completion is calculated between its minimum and target, multiplied by its weight, and the contributions add up to the overall KPI. Like plov: every ingredient has its share, the taste is shared.", "faq.q3": "Can I change the A–F grades and thresholds?", "faq.a3": "Yes. In “KPI settings” you can change thresholds and add or remove grades. Want “A” only for heroes? Raise the bar.", "faq.q4": "Can I change the tax rate?", "faq.a4": "Yes. The rate is set in “KPI settings” — e.g. 7.5% or 12%. Each calculation remembers the rate it used.", "faq.q5": "Can I upload data from Excel?", "faq.a5": "Yes. .xlsx, .xls and .csv files are supported — both goals (metrics) and employee actuals.", "faq.q6": "Who can see my company’s data?", "faq.a6": "Only users with access. Roles and permissions are checked on the server, not just in the interface.", "blog.title": "Blog", "blog.read": "Read", "blog.t1": "KPI in plain words", "blog.p1": "A KPI is a number that shows how much of the plan someone hit. Example: Aziz the salesman promised 100 sales and made 90 — that’s 90%. If his customers are happy too, Aziz gets a good grade, not just a good mood.", "blog.t2": "How to choose metric weights", "blog.p2": "A weight is what a metric is “worth”. Like plov: rice 50%, meat 30%, carrots 20%, cumin to taste. Give the main result 40–50%, quality 25–35%, the rest 10–15% each. More than 5–6 metrics and you’re not cooking plov any more — it’s a salad.", "blog.t3": "5 bonus calculation mistakes", "blog.p3": "1) Formulas spread across five “total_final_2” files. 2) Weights add up to 117% — generous, but wrong. 3) No minimum threshold — even the guy “working from home” at the choyxona all month gets a bonus. 4) People can’t see what their bonus is made of, so they come to ask. 5) No history — nobody remembers March. Unoom fixes all five.", "ask.title": "Have questions? Stay right here", "ask.lead": "Short answers, useful reads and a little humour — KPIs don’t have to be boring.", "ask.why": "Why", "ask.how": "How it works", "ask.reports": "Reports", "ask.faq": "FAQ", "ask.blog": "Blog", "faq.side": "Didn’t find an answer? Check the blog or just try the service — it’s quicker than any explanation.", "ask.contact": "Write to us", "ct.title": "Write to us", "ct.lead": "A question, an idea, a complaint or found a bug? Fill in the form — it goes straight to our inbox and we’ll reply to your email.", "ct.name": "Your name", "ct.email": "Email", "ct.cat": "Category", "ct.c1": "Question", "ct.c2": "Idea", "ct.c3": "Complaint", "ct.c4": "Bug", "ct.c5": "Other", "ct.msg": "Message", "ct.send": "Send", "ct.sending": "Sending…", "ct.ok": "Thank you! Your message was sent — we’ll reply to your email.", "ct.err": "Couldn’t send through the form. Press the button below — your mail app opens with the message ready.", "ct.invalid": "Please fill in your name, a valid email and a message.", "num.args": "arguments", "s1.desc": "The whole team in one place — no more lists scribbled on a choyxona napkin.", "s2.desc": "Decide what matters more: sales or being nice to customers. Both is fine — the weights split it fairly.", "s3.desc": "Total and bonus in a second. All that’s left is to say “Well done!”", "f1.desc": "The formula is as clear as the morning sky over Chimgan: everyone sees what their result is made of.", "f2.desc": "Upload a file and forget Ctrl+C, Ctrl+V until Navruz.", "f3.desc": "Everyone sees their own result: the employee celebrates a high KPI and starts counting the money, the manager is proud of the team — and the neighbours can stay jealous 😜", "pricing.text": "Pricing depends on team size and modules — like plov: cooking for two isn’t cooking for a wedding. Log in to try it — we’ll agree on terms individually.", "ct.pending": "The form is almost ready: the site owner needs to confirm it once by email. For now, send your message by email — button below.", "ct.mailbtn": "Send by email"});
+  I18N.uz["meta.title"] = "Unoom — KPI hisoblash va boshqaruv tizimi";
+  I18N.uz["meta.desc"] = "Jamoa natijasini shaffof o‘lchang, KPI va mukofot hisob-kitoblarini avtomatlashtiring, ma’lumotlarni Excel / CSV dan import qiling.";
+  I18N.ru["meta.title"] = "Unoom — система расчёта и управления KPI";
+  I18N.ru["meta.desc"] = "Прозрачно измеряйте результат команды, автоматизируйте расчёты KPI и премий, импортируйте данные из Excel / CSV.";
+  I18N.en["meta.title"] = "Unoom — KPI calculation and management system";
+  I18N.en["meta.desc"] = "Measure team results transparently, automate KPI and bonus calculations, import data from Excel / CSV.";
   window.L_I18N = I18N;
   var root = document.documentElement;
   var boot = window.KpiBoot;
@@ -1201,9 +1214,13 @@
   var vizToggle = document.getElementById("viz-toggle");
   var paused = false;
 
-  function setLang(lang) {
-    var dict = I18N[lang] || I18N.ru;
+  function setLang(lang, remember) {
+    if (!I18N[lang]) lang = "uz";
+    var dict = I18N[lang];
     root.setAttribute("lang", lang);
+    document.title = dict["meta.title"];
+    var metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", dict["meta.desc"]);
     landing.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = dict[el.getAttribute("data-i18n")]; });
     landing.querySelectorAll("[data-i18n-html]").forEach(function (el) { el.innerHTML = dict[el.getAttribute("data-i18n-html")]; });
     landing.querySelectorAll("[data-i18n-label]").forEach(function (el) {
@@ -1213,7 +1230,7 @@
       el.setAttribute("title", dict[key]);
     });
     landing.querySelectorAll("[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang)); });
-    boot.store.set("avo-lang", lang);
+    if (remember) boot.store.set("unoom-lang", lang);
     document.dispatchEvent(new CustomEvent("l:lang"));
   }
 
@@ -1224,13 +1241,13 @@
     boot.store.set("avo-theme", theme);
   }
   boot.setTheme = setTheme; // переключатель темы внутри приложения использует тот же механизм
-  boot.setLang = setLang;   // и переключатель языка
+  boot.setLang = function (l) { setLang(l, true); }; // и переключатель языка
 
   landing.addEventListener("click", function (e) {
     var t = e.target.closest("button, a");
     if (!t) return;
     if (t.hasAttribute("data-enter")) { boot.enterApp(); return; }
-    if (t.hasAttribute("data-lang")) { setLang(t.getAttribute("data-lang")); return; }
+    if (t.hasAttribute("data-lang")) { setLang(t.getAttribute("data-lang"), true); return; }
     if (t.hasAttribute("data-theme-set")) { setTheme(t.getAttribute("data-theme-set")); return; }
     if (t === vizToggle) {
       paused = !paused;
@@ -1243,7 +1260,7 @@
   });
 
   setTheme(root.getAttribute("data-theme-choice") || "system");
-  setLang(root.getAttribute("lang") || "ru");
+  setLang(root.getAttribute("lang") || "uz");
 })();
 </script>
 
@@ -1254,9 +1271,9 @@
   var landing = document.getElementById("landing");
   var root = document.documentElement;
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function lang() { return root.getAttribute("lang") || "ru"; }
+  function lang() { return root.getAttribute("lang") || "uz"; }
   function t(key, vars) {
-    var d = (window.L_I18N[lang()] || window.L_I18N.ru)[key] || key;
+    var d = (window.L_I18N[lang()] || window.L_I18N.uz)[key] || key;
     if (vars) Object.keys(vars).forEach(function (k) { d = d.split("{" + k + "}").join(vars[k]); });
     return d;
   }
@@ -1502,7 +1519,7 @@ const NUM_FONT = "'SF Mono', ui-monospace, Menlo, monospace";
 
 // ---------------- язык интерфейса (RU / UZ / EN) ----------------
 // Тот же выбор, что и на лендинге (KpiBoot.setLang). T("русский текст") возвращает перевод.
-let APP_LANG = ["ru", "uz", "en"].includes(document.documentElement.getAttribute("lang")) ? document.documentElement.getAttribute("lang") : "ru";
+let APP_LANG = ["ru", "uz", "en"].includes(document.documentElement.getAttribute("lang")) ? document.documentElement.getAttribute("lang") : "uz";
 const APP_DICT = {"не удалось прочитать таблицу": {"uz": "jadvalni o‘qib bo‘lmadi", "en": "couldn’t read the table"}, "Название показателя / KPI": {"uz": "Ko‘rsatkich nomi / KPI", "en": "Metric name / KPI"}, "сум": {"uz": "so‘m", "en": "UZS"}, "ч": {"uz": "soat", "en": "h"}, "Сотрудники": {"uz": "Xodimlar", "en": "Employees"}, "Импорт из Excel": {"uz": "Excel’dan import", "en": "Import from Excel"}, "Настройки KPI": {"uz": "KPI sozlamalari", "en": "KPI settings"}, "Загрузить цели": {"uz": "Maqsadlarni yuklash", "en": "Upload goals"}, "История": {"uz": "Tarix", "en": "History"}, "Пользователи": {"uz": "Foydalanuvchilar", "en": "Users"}, "Пользователь": {"uz": "Foydalanuvchi", "en": "User"}, "Светлая тема": {"uz": "Yorug‘ mavzu", "en": "Light theme"}, "Тёмная тема": {"uz": "Qorong‘i mavzu", "en": "Dark theme"}, "Как в системе": {"uz": "Tizimdagidek", "en": "System theme"}, "Тема": {"uz": "Mavzu", "en": "Theme"}, "Язык": {"uz": "Til", "en": "Language"}, "Динамика KPI": {"uz": "KPI dinamikasi", "en": "KPI trend"}, "Пульс команды · {m}": {"uz": "Jamoa pulsi · {m}", "en": "Team pulse · {m}"}, "Средний KPI": {"uz": "O‘rtacha KPI", "en": "Average KPI"}, "рассчитано: {a} из {b}": {"uz": "hisoblangan: {a} / {b}", "en": "calculated: {a} of {b}"}, "Лучший результат": {"uz": "Eng yaxshi natija", "en": "Best result"}, "Нужна поддержка": {"uz": "Yordam kerak", "en": "Needs support"}, "KPI ниже 50%": {"uz": "KPI 50% dan past", "en": "KPI below 50%"}, "все выше 50%": {"uz": "hammasi 50% dan yuqori", "en": "all above 50%"}, "Ещё не рассчитаны за этот месяц: {n}.": {"uz": "Bu oy uchun hali hisoblanmagan: {n}.", "en": "Not calculated for this month yet: {n}."}, "факт": {"uz": "fakt", "en": "actual"}, "Вклад {c} из {w} возможных": {"uz": "Hissa: {c} / {w}", "en": "Contribution {c} of {w} possible"}, "вклад": {"uz": "hissa", "en": "contribution"}, "из": {"uz": "/", "en": "of"}, " · перевыполнение": {"uz": " · rejadan oshirib bajarildi", "en": " · overachieved"}, "Это высшая оценка — отличный результат. Держите уровень и в следующем месяце.": {"uz": "Bu eng yuqori baho — ajoyib natija. Keyingi oyda ham shu darajani saqlang.", "en": "That’s the top grade — great result. Keep it up next month."}, "До оценки {g} не хватает {gap} п.п.": {"uz": "{g} bahogacha {gap} p.p. yetmayapti.", "en": "{gap} pts short of grade {g}."}, "Быстрее всего — через «{name}» (вес {w}%):": {"uz": "Eng tezi — «{name}» orqali (vazn {w}%):", "en": "Fastest way — “{name}” (weight {w}%):"}, "достаточно поднять выполнение с {a}% до {b}%.": {"uz": "bajarilishni {a}% dan {b}% gacha oshirish kifoya.", "en": "raise completion from {a}% to {b}%."}, "даже максимум по нему даст +{r} п.п., нужны улучшения и по другим показателям.": {"uz": "undagi maksimum ham +{r} p.p. beradi, boshqa ko‘rsatkichlarni ham yaxshilash kerak.", "en": "even its maximum gives +{r} pts, other metrics need to improve too."}, "Не удалось войти автоматически: ": {"uz": "Avtomatik kirib bo‘lmadi: ", "en": "Automatic sign-in failed: "}, "Unoom · KPI сотрудников": {"uz": "Unoom · Xodimlar KPI", "en": "Unoom · Employee KPI"}, "Открываем демо-доступ…": {"uz": "Demo kirish ochilmoqda…", "en": "Opening demo access…"}, "У меня уже есть аккаунт — войти по email": {"uz": "Menda akkaunt bor — email orqali kirish", "en": "I already have an account — sign in by email"}, "Готово. Если в проекте включено подтверждение почты — проверьте письмо, затем войдите.": {"uz": "Tayyor. Agar pochtani tasdiqlash yoqilgan bo‘lsa — xatni tekshiring, so‘ng kiring.", "en": "Done. If email confirmation is on, check your inbox, then sign in."}, "Ошибка входа": {"uz": "Kirish xatosi", "en": "Sign-in error"}, "Вход": {"uz": "Kirish", "en": "Sign in"}, "Регистрация": {"uz": "Ro‘yxatdan o‘tish", "en": "Sign up"}, "Пароль": {"uz": "Parol", "en": "Password"}, "Войти": {"uz": "Kirish", "en": "Log in"}, "Зарегистрироваться": {"uz": "Ro‘yxatdan o‘tish", "en": "Sign up"}, "Нет аккаунта? Зарегистрироваться": {"uz": "Akkaunt yo‘qmi? Ro‘yxatdan o‘ting", "en": "No account? Sign up"}, "Уже есть аккаунт? Войти": {"uz": "Akkaunt bormi? Kiring", "en": "Have an account? Log in"}, "← Назад": {"uz": "← Orqaga", "en": "← Back"}, "Назад": {"uz": "Orqaga", "en": "Back"}, "← На главную": {"uz": "← Bosh sahifaga", "en": "← Home"}, "На главную": {"uz": "Bosh sahifaga", "en": "Home"}, "ФИО нового сотрудника": {"uz": "Yangi xodimning F.I.Sh.", "en": "New employee’s full name"}, "Добавить": {"uz": "Qo‘shish", "en": "Add"}, "Расчётов ещё нет": {"uz": "Hali hisob-kitob yo‘q", "en": "No calculations yet"}, "Открыть карточку KPI": {"uz": "KPI kartasini ochish", "en": "Open KPI card"}, "Точно?": {"uz": "Aniqmi?", "en": "Sure?"}, "Сотрудников пока нет — добавьте первого выше.": {"uz": "Hozircha xodimlar yo‘q — birinchisini yuqorida qo‘shing.", "en": "No employees yet — add the first one above."}, "Налог с премии": {"uz": "Mukofotdan soliq", "en": "Bonus tax"}, "Уменьшить налог": {"uz": "Soliqni kamaytirish", "en": "Decrease tax"}, "Увеличить налог": {"uz": "Soliqni oshirish", "en": "Increase tax"}, "Не нашёл ни одной строки с показателем в файле.": {"uz": "Faylda birorta ko‘rsatkich qatori topilmadi.", "en": "No metric rows found in the file."}, "Не удалось прочитать файл. Убедитесь, что это .xlsx, .xls или .csv.": {"uz": "Faylni o‘qib bo‘lmadi. Bu .xlsx, .xls yoki .csv ekanini tekshiring.", "en": "Couldn’t read the file. Make sure it’s .xlsx, .xls or .csv."}, "Не удалось загрузить модуль Excel — проверьте интернет и попробуйте ещё раз.": {"uz": "Excel modulini yuklab bo‘lmadi — internetni tekshirib, qayta urinib ko‘ring.", "en": "Couldn’t load the Excel module — check your internet and try again."}, "Импорт показателей из Excel/CSV": {"uz": "Ko‘rsatkichlarni Excel/CSV’dan import qilish", "en": "Import metrics from Excel/CSV"}, "Закрыть": {"uz": "Yopish", "en": "Close"}, "Файл должен содержать колонки: название показателя (KPI), Min point, Normal point — и, по желанию, «Вес показателя», «Подразделение», «Должность».": {"uz": "Faylda ustunlar bo‘lishi kerak: ko‘rsatkich nomi (KPI), Min point, Normal point — va ixtiyoriy «Vazn», «Bo‘lim», «Lavozim».", "en": "The file must have columns: metric name (KPI), Min point, Normal point — and optionally “Weight”, “Department”, “Position”."}, "Загрузить файл": {"uz": "Faylni yuklash", "en": "Upload file"}, "В файле не нашлись обязательные колонки: {cols}. Переименуйте заголовки в файле (например «KPI», «Min», «Normal») и загрузите заново.": {"uz": "Faylda majburiy ustunlar topilmadi: {cols}. Sarlavhalarni o‘zgartiring (masalan «KPI», «Min», «Normal») va qayta yuklang.", "en": "Required columns not found: {cols}. Rename the headers (e.g. “KPI”, “Min”, “Normal”) and upload again."}, "Предполагаемое подразделение:": {"uz": "Taxminiy bo‘lim:", "en": "Likely department:"}, "Подразделение не определено": {"uz": "Bo‘lim aniqlanmadi", "en": "Department not detected"}, "Изменить подразделение": {"uz": "Bo‘limni o‘zgartirish", "en": "Change department"}, "Своё название подразделения": {"uz": "Bo‘limning o‘z nomi", "en": "Custom department name"}, "Готово": {"uz": "Tayyor", "en": "Done"}, "Найдено показателей: {n}. Проверьте и при необходимости исправьте перед сохранением.": {"uz": "Topilgan ko‘rsatkichlar: {n}. Saqlashdan oldin tekshirib, kerak bo‘lsa tuzating.", "en": "Metrics found: {n}. Check and fix them before saving if needed."}, "Показатель": {"uz": "Ko‘rsatkich", "en": "Metric"}, "Должность": {"uz": "Lavozim", "en": "Position"}, "Вес": {"uz": "Vazn", "en": "Weight"}, "Сохранить KPI": {"uz": "KPI ni saqlash", "en": "Save KPI"}, "Загрузить другой файл": {"uz": "Boshqa fayl yuklash", "en": "Upload another file"}, "Загрузите файл с целями (KPI) — система сама распознает показатели, минимум, норматив и вес, и добавит их в «Настройки KPI» без ручного ввода. Проверить и поправить результат можно прямо здесь, перед сохранением.": {"uz": "Maqsadlar (KPI) faylini yuklang — tizim ko‘rsatkichlar, minimum, norma va vaznni o‘zi taniydi va ularni «KPI sozlamalari»ga qo‘lda kiritmasdan qo‘shadi. Natijani saqlashdan oldin shu yerda tekshirib, tuzatish mumkin.", "en": "Upload a goals (KPI) file — the system recognises metrics, minimum, target and weight and adds them to “KPI settings” with no manual entry. You can check and fix the result right here before saving."}, "Добавлено показателей: {n}. Проверить и настроить их можно на вкладке «Настройки KPI».": {"uz": "Qo‘shilgan ko‘rsatkichlar: {n}. Ularni «KPI sozlamalari» bo‘limida tekshirish mumkin.", "en": "Metrics added: {n}. You can review them in “KPI settings”."}, "Новый показатель": {"uz": "Yangi ko‘rsatkich", "en": "New metric"}, "Мои настройки": {"uz": "Mening sozlamalarim", "en": "My settings"}, "По умолчанию (для новых)": {"uz": "Standart (yangilar uchun)", "en": "Default (for new users)"}, "Вы редактируете общий шаблон по умолчанию — его получают только НОВЫЕ пользователи при первом входе. На уже существующих пользователей (включая вас) это не влияет.": {"uz": "Siz umumiy standart shablonni tahrirlayapsiz — uni faqat YANGI foydalanuvchilar birinchi kirishda oladi. Mavjud foydalanuvchilarga (shu jumladan sizga) ta’sir qilmaydi.", "en": "You’re editing the shared default template — only NEW users get it on first sign-in. Existing users (including you) are not affected."}, "Это ваши личные настройки KPI — изменения здесь видите только вы, они не затрагивают других пользователей.": {"uz": "Bu sizning shaxsiy KPI sozlamalaringiz — o‘zgarishlarni faqat siz ko‘rasiz, ular boshqa foydalanuvchilarga ta’sir qilmaydi.", "en": "These are your personal KPI settings — only you see these changes; other users are not affected."}, "Показатели": {"uz": "Ko‘rsatkichlar", "en": "Metrics"}, "Сумма весов: {n}% · цель:": {"uz": "Vaznlar yig‘indisi: {n}% · maqsad:", "en": "Weights total: {n}% · target:"}, "Название": {"uz": "Nomi", "en": "Name"}, "Вес, %": {"uz": "Vazn, %", "en": "Weight, %"}, "Минимум": {"uz": "Minimum", "en": "Minimum"}, "Норматив": {"uz": "Norma", "en": "Target"}, "Описание (необязательно)": {"uz": "Tavsif (ixtiyoriy)", "en": "Description (optional)"}, "Направление:": {"uz": "Yo‘nalish:", "en": "Direction:"}, "Больше — лучше": {"uz": "Ko‘proq — yaxshiroq", "en": "Higher is better"}, "Меньше — лучше": {"uz": "Kamroq — yaxshiroq", "en": "Lower is better"}, "Включён (учитывается в расчёте)": {"uz": "Yoqilgan (hisobga olinadi)", "en": "Enabled (counted)"}, "Порядок:": {"uz": "Tartib:", "en": "Order:"}, "Направление задаётся явно кнопками выше и не зависит от названия показателя — можно переименовать показатель в любой момент, расчёт не изменится. Выключенные показатели не участвуют в расчёте KPI.": {"uz": "Yo‘nalish yuqoridagi tugmalar bilan belgilanadi va ko‘rsatkich nomiga bog‘liq emas — nomni istalgan vaqtda o‘zgartirish mumkin, hisob o‘zgarmaydi. O‘chirilgan ko‘rsatkichlar KPI hisobida qatnashmaydi.", "en": "Direction is set with the buttons above and doesn’t depend on the metric name — rename it any time, the calculation won’t change. Disabled metrics are not counted."}, "Сумма 100% премии, сум": {"uz": "100% mukofot summasi, so‘m", "en": "Bonus at 100%, UZS"}, "Норма часов в месяц": {"uz": "Oylik soat normasi", "en": "Monthly hours norm"}, "Формула расчёта": {"uz": "Hisob formulasi", "en": "Formula"}, "Линейная": {"uz": "Chiziqli", "en": "Linear"}, "Ступенчатая": {"uz": "Pog‘onali", "en": "Stepped"}, "Буквенные оценки": {"uz": "Harfli baholar", "en": "Letter grades"}, "Оценка": {"uz": "Baho", "en": "Grade"}, "Выполнение от, %": {"uz": "Bajarilish, % dan", "en": "Completion from, %"}, "Изменения сохраняются автоматически и сразу видны всем пользователям.": {"uz": "O‘zgarishlar avtomatik saqlanadi.", "en": "Changes are saved automatically."}, "Этот email уже зарегистрирован — измените роль ему прямо в списке ниже.": {"uz": "Bu email allaqachon ro‘yxatdan o‘tgan — rolini quyidagi ro‘yxatda o‘zgartiring.", "en": "This email is already registered — change its role in the list below."}, "Не удалось добавить — попробуйте ещё раз.": {"uz": "Qo‘shib bo‘lmadi — qayta urinib ko‘ring.", "en": "Couldn’t add — please try again."}, "Пользователи и права": {"uz": "Foydalanuvchilar va huquqlar", "en": "Users and permissions"}, "Добавить пользователя": {"uz": "Foydalanuvchi qo‘shish", "en": "Add user"}, "Роль присвоится автоматически, как только этот человек сам зайдёт на сайт и зарегистрируется этим же email. Пароль он придумывает сам — вы его не задаёте.": {"uz": "Rol bu odam saytga kirib, shu email bilan ro‘yxatdan o‘tishi bilan avtomatik beriladi. Parolni u o‘zi o‘ylab topadi — siz belgilamaysiz.", "en": "The role is assigned automatically once this person signs up with the same email. They choose their own password — you don’t set it."}, "Ожидают регистрации": {"uz": "Ro‘yxatdan o‘tishni kutmoqda", "en": "Waiting for sign-up"}, "ещё не зарегистрирован": {"uz": "hali ro‘yxatdan o‘tmagan", "en": "not registered yet"}, "Гость": {"uz": "Mehmon", "en": "Guest"}, "(вы)": {"uz": "(siz)", "en": "(you)"}, "Единственный Super Admin": {"uz": "Yagona Super Admin", "en": "The only Super Admin"}, "Управление сотрудниками": {"uz": "Xodimlarni boshqarish", "en": "Manage employees"}, "Видеть чужие файлы/расчёты": {"uz": "Boshqalarning fayl/hisoblarini ko‘rish", "en": "See others’ files/calculations"}, "Точно удалить?": {"uz": "Aniq o‘chirilsinmi?", "en": "Delete for sure?"}, "Удалить": {"uz": "O‘chirish", "en": "Delete"}, "Пока нет других зарегистрированных пользователей.": {"uz": "Hozircha boshqa ro‘yxatdan o‘tgan foydalanuvchilar yo‘q.", "en": "No other registered users yet."}, "Права проверяются на сервере (Supabase RLS), а не только в интерфейсе — их нельзя обойти через инструменты разработчика браузера.": {"uz": "Huquqlar serverda (Supabase RLS) tekshiriladi, faqat interfeysda emas — ularni brauzer vositalari orqali chetlab o‘tib bo‘lmaydi.", "en": "Permissions are checked on the server (Supabase RLS), not just in the interface — they can’t be bypassed with browser dev tools."}, "Показатели KPI ещё не настроены.": {"uz": "KPI ko‘rsatkichlari hali sozlanmagan.", "en": "KPI metrics aren’t set up yet."}, "Факт": {"uz": "Fakt", "en": "Actual"}, "Отработано часов (норма — {n})": {"uz": "Ishlangan soat (norma — {n})", "en": "Hours worked (norm — {n})"}, "Рассчитать KPI": {"uz": "KPI ni hisoblash", "en": "Calculate KPI"}, "Общий KPI": {"uz": "Umumiy KPI", "en": "Overall KPI"}, "Рассчитано: {d}": {"uz": "Hisoblangan: {d}", "en": "Calculated: {d}"}, "Премия (макс. {n})": {"uz": "Mukofot (maks. {n})", "en": "Bonus (max {n})"}, "После налога ({p}%): {v}": {"uz": "Soliqdan keyin ({p}%): {v}", "en": "After tax ({p}%): {v}"}, "Экспорт в Excel": {"uz": "Excel’ga eksport", "en": "Export to Excel"}, "Точно удалить расчёт?": {"uz": "Hisob aniq o‘chirilsinmi?", "en": "Delete this calculation?"}, "Удалить расчёт": {"uz": "Hisobni o‘chirish", "en": "Delete calculation"}, "Из чего сложился KPI": {"uz": "KPI nimalardan iborat", "en": "What makes up the KPI"}, "Как улучшить": {"uz": "Qanday yaxshilash mumkin", "en": "How to improve"}, "Не нашёл ни одной строки с именем сотрудника в первой колонке.": {"uz": "Birinchi ustunda xodim ismi bo‘lgan qator topilmadi.", "en": "No rows with an employee name found in the first column."}, "Сотрудник": {"uz": "Xodim", "en": "Employee"}, "Часы": {"uz": "Soatlar", "en": "Hours"}, "Итоговый KPI, %": {"uz": "Yakuniy KPI, %", "en": "Overall KPI, %"}, "Премия, сум": {"uz": "Mukofot, so‘m", "en": "Bonus, UZS"}, "Налог, %": {"uz": "Soliq, %", "en": "Tax, %"}, "Премия после налога, сум": {"uz": "Soliqdan keyingi mukofot, so‘m", "en": "Bonus after tax, UZS"}, "Период": {"uz": "Davr", "en": "Period"}, "Результат импорта": {"uz": "Import natijasi", "en": "Import result"}, "оценка": {"uz": "baho", "en": "grade"}, "Первая колонка — ФИО сотрудника. Дальше — колонки показателей (названия должны совпадать с «Настройками KPI») и, по желанию, колонка «Часы» с отработанными часами за месяц — если её нет, считается полная норма. Минимум, норматив, вес, сумма премии и норма часов всегда берутся из настроек, а не из файла.": {"uz": "Birinchi ustun — xodimning F.I.Sh. Keyin — ko‘rsatkich ustunlari (nomlari «KPI sozlamalari» bilan mos bo‘lishi kerak) va ixtiyoriy «Часы» (soatlar) ustuni — u bo‘lmasa, to‘liq norma olinadi. Minimum, norma, vazn, mukofot summasi va soat normasi doim sozlamalardan olinadi.", "en": "First column — employee’s full name. Then metric columns (names must match “KPI settings”) and optionally an “Часы” (hours) column — without it the full norm is used. Minimum, target, weight, bonus and hours norm always come from settings, not from the file."}, "Месяц": {"uz": "Oy", "en": "Month"}, "Ошибка: в файле не найдены столбцы для показателей — {cols}. Импорт заблокирован, пока не найдены все показатели.": {"uz": "Xato: faylda ko‘rsatkichlar uchun ustunlar topilmadi — {cols}. Barcha ko‘rsatkichlar topilmaguncha import bloklangan.", "en": "Error: no columns found for metrics — {cols}. Import is blocked until all metrics are found."}, "Колонка «Часы» не найдена — для всех строк будет использована полная норма ({n} ч).": {"uz": "«Часы» ustuni topilmadi — barcha qatorlar uchun to‘liq norma ({n} soat) olinadi.", "en": "No “Часы” (hours) column — the full norm ({n} h) will be used for all rows."}, "Найдено сотрудников: {n} · период: {m}": {"uz": "Topilgan xodimlar: {n} · davr: {m}", "en": "Employees found: {n} · period: {m}"}, "Лишние колонки: {cols}. Игнорируются.": {"uz": "Ortiqcha ustunlar: {cols}. E’tiborga olinmaydi.", "en": "Extra columns: {cols}. Ignored."}, "часы": {"uz": "soatlar", "en": "hours"}, "Результат · {m}": {"uz": "Natija · {m}", "en": "Result · {m}"}, "Скачать результат в Excel": {"uz": "Natijani Excel’da yuklab olish", "en": "Download result as Excel"}, "после налога {p}%": {"uz": "soliqdan keyin {p}%", "en": "after {p}% tax"}, "Не удалось удалить «{name}» — попробуйте ещё раз.": {"uz": "«{name}»ni o‘chirib bo‘lmadi — qayta urinib ko‘ring.", "en": "Couldn’t delete “{name}” — please try again."}, "вы": {"uz": "siz", "en": "you"}, "гость": {"uz": "mehmon", "en": "guest"}, "неизвестно": {"uz": "noma’lum", "en": "unknown"}, "История расчётов": {"uz": "Hisob-kitoblar tarixi", "en": "Calculation history"}, "Экспорт всей истории": {"uz": "Butun tarixni eksport qilish", "en": "Export full history"}, "Открыть": {"uz": "Ochish", "en": "Open"}, "Пока нет сохранённых расчётов.": {"uz": "Hozircha saqlangan hisoblar yo‘q.", "en": "No saved calculations yet."}, "Не удалось подключиться к базе данных": {"uz": "Ma’lumotlar bazasiga ulanib bo‘lmadi", "en": "Couldn’t connect to the database"}, "Не удалось подключиться к базе данных (проверьте интернет)": {"uz": "Ma’lumotlar bazasiga ulanib bo‘lmadi (internetni tekshiring)", "en": "Couldn’t connect to the database (check your internet)"}, "Слишком долго нет ответа от базы данных — проверьте интернет-соединение или настройки Supabase.": {"uz": "Ma’lumotlar bazasi uzoq javob bermayapti — internet yoki Supabase sozlamalarini tekshiring.", "en": "The database is taking too long to respond — check your connection or Supabase settings."}, "Не удалось загрузить данные": {"uz": "Ma’lumotlarni yuklab bo‘lmadi", "en": "Couldn’t load data"}, "Не удалось сохранить настройки: ": {"uz": "Sozlamalarni saqlab bo‘lmadi: ", "en": "Couldn’t save settings: "}, "Не удалось изменить пользователя: ": {"uz": "Foydalanuvchini o‘zgartirib bo‘lmadi: ", "en": "Couldn’t update user: "}, "Не удалось удалить пользователя: ": {"uz": "Foydalanuvchini o‘chirib bo‘lmadi: ", "en": "Couldn’t delete user: "}, "Не удалось удалить: ": {"uz": "O‘chirib bo‘lmadi: ", "en": "Couldn’t delete: "}, "Ставка налога пока не сохраняется в базе (остальные настройки сохранены). Один раз выполните в Supabase → SQL Editor: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;": {"uz": "Soliq stavkasi hali bazada saqlanmaydi (boshqa sozlamalar saqlandi). Supabase → SQL Editor’da bir marta bajaring: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;", "en": "The tax rate isn’t saved in the database yet (other settings are). Run once in Supabase → SQL Editor: alter table kpi_settings add column if not exists tax_rate numeric default 7.5;"}, "Сумма 100% премии, сум ": {"uz": "100% mukofot summasi, so‘m", "en": "Bonus at 100%, UZS"}, "Выполнение, %": {"uz": "Bajarilish, %", "en": "Completion, %"}, "Вклад, %": {"uz": "Hissa, %", "en": "Contribution, %"}, "Итоговый KPI": {"uz": "Yakuniy KPI", "en": "Overall KPI"}, "История KPI": {"uz": "KPI tarixi", "en": "KPI history"}, "Нужно подключить базу данных": {"uz": "Ma’lumotlar bazasini ulash kerak", "en": "Database needs to be connected"}, "Откройте этот файл в текстовом редакторе и впишите SUPABASE_URL и SUPABASE_ANON_KEY (вверху script-блока) — их можно найти в вашем проекте Supabase → Settings → API.": {"uz": "Bu faylni matn muharririda oching va SUPABASE_URL hamda SUPABASE_ANON_KEY ni kiriting (script blokining yuqorisida) — ularni Supabase → Settings → API bo‘limida topasiz.", "en": "Open this file in a text editor and fill in SUPABASE_URL and SUPABASE_ANON_KEY (top of the script block) — find them in Supabase → Settings → API."}, "Не удалось подключиться": {"uz": "Ulanib bo‘lmadi", "en": "Couldn’t connect"}, "Попробовать снова": {"uz": "Qayta urinish", "en": "Try again"}, "Расчёт премии по показателям": {"uz": "Ko‘rsatkichlar bo‘yicha mukofot hisobi", "en": "Bonus calculation by metrics"}, "Гость (без регистрации)": {"uz": "Mehmon (ro‘yxatdan o‘tmagan)", "en": "Guest (not registered)"}, "Выйти": {"uz": "Chiqish", "en": "Log out"}, "Строка {row}, «{name}»: не удалось прочитать «{ind}» — поставлено 0": {"uz": "{row}-qator, «{name}»: «{ind}» o‘qilmadi — 0 qo‘yildi", "en": "Row {row}, “{name}”: couldn’t read “{ind}” — set to 0"}};
 Object.assign(APP_DICT, {
   "Учитывать перевыполнение выше 100% для премии": {"uz": "Mukofot uchun 100% dan ortiq bajarilishni hisobga olish", "en": "Count overachievement above 100% in the bonus"},
@@ -1928,7 +1945,7 @@ function ThemeSwitch() {
 function LangSwitch() {
   return (
     <div role="group" aria-label={T("Язык")} style={{ display: "flex", padding: 3, gap: 2, borderRadius: 999, border: `1px solid ${BORDER}`, background: CARD_BG }}>
-      {["ru", "uz", "en"].map((l) => (
+      {["uz", "ru", "en"].map((l) => (
         <button key={l} onClick={() => window.KpiBoot?.setLang?.(l)} aria-pressed={APP_LANG === l}
           style={{ height: 30, minWidth: 34, padding: "0 8px", borderRadius: 999, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
             background: APP_LANG === l ? BLUE : "transparent", color: APP_LANG === l ? ON_PRIMARY : MUTED }}>
@@ -3002,7 +3019,7 @@ function KpiApp() {
   useEffect(() => {
     const onLang = () => {
       const l = document.documentElement.getAttribute("lang");
-      APP_LANG = ["ru", "uz", "en"].includes(l) ? l : "ru";
+      APP_LANG = ["ru", "uz", "en"].includes(l) ? l : "uz";
       setLangTick(APP_LANG + Date.now());
     };
     document.addEventListener("l:lang", onLang);
